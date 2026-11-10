@@ -1,0 +1,9 @@
+@if (visible()) {
+  <aside class="banner" role="dialog" aria-label="Cookie notice">
+    <p>ArtSpace uses cookies to remember your username and theme. You can decline and the site still works.</p>
+    <div>
+      <button (click)="choose('accepted')" class="yes">Accept</button>
+      <button (click)="choose('declined')">Decline</button>
+    </div>
+  </aside>
+}

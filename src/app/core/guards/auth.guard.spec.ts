@@ -6,7 +6,7 @@ import { User } from '../models/user.model';
 
 describe('route guards', () => {
   let auth: AuthService;
-  const run = (guard: any) => TestBed.runInInjectionContext(() => guard({} as any, {} as any));
+  const run = (guard: any) => TestBed.runInInjectionContext(() => guard({} as any, { url: '/profile' } as any));
   const fakeUser = (role: User['role']) => ({ id: '1', role } as User);
 
   beforeEach(() => {
@@ -35,5 +35,10 @@ describe('route guards', () => {
     auth.currentUser.set(fakeUser('student'));
     const result = run(roleGuard('accountant', 'admin'));
     expect(result instanceof UrlTree).toBeTrue();
+  });
+
+  it('authGuard remembers the page the user wanted', () => {
+  run(authGuard);
+  expect(sessionStorage.getItem('artspace_return')).toBe('/profile');
   });
 });

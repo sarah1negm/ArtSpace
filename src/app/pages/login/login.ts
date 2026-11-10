@@ -27,7 +27,11 @@ export class Login {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
     const { username, password, remember } = this.form.getRawValue();
     const res = await this.auth.login(username, password, remember);
-    if (res.ok) this.router.navigate(['/profile']);
+    if (res.ok){
+      const back = sessionStorage.getItem('artspace_return');
+      sessionStorage.removeItem('artspace_return');
+      this.router.navigateByUrl(back || '/profile');
+    }
     else this.error.set(res.error);
   }
 }
