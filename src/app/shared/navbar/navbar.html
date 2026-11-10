@@ -1,0 +1,25 @@
+<nav class="nav">
+  <a routerLink="/" class="brand">ArtSpace</a>
+
+  <button class="burger" (click)="toggle()" aria-label="Menu">☰</button>
+
+  <div class="links" [class.open]="menuOpen()" (click)="menuOpen.set(false)">
+    <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Home</a>
+    <a routerLink="/gallery" routerLinkActive="active">Gallery</a>
+
+    @if (auth.role() === 'student') {
+      <a routerLink="/student" routerLinkActive="active">My Dashboard</a>
+    }
+    @if (auth.role() === 'accountant' || auth.role() === 'admin') {
+      <a routerLink="/accounting" routerLinkActive="active">Accounting</a>
+    }
+
+    @if (auth.isLoggedIn()) {
+      <a routerLink="/profile" routerLinkActive="active">Profile</a>
+      <button class="logout" (click)="logout()">Logout</button>
+    } @else {
+      <a routerLink="/login" routerLinkActive="active">Login</a>
+      <a routerLink="/signup" class="cta">Sign up</a>
+    }
+  </div>
+</nav>
