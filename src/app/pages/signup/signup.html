@@ -1,1 +1,47 @@
-<p>signup works!</p>
+<form class="auth-card" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+  <h2>Create your ArtSpace account</h2>
+
+  <label for="username">Username</label>
+  <input id="username" type="text" formControlName="username" />
+  @if (f.username.touched && f.username.invalid) {
+    <p class="error">3+ characters: letters, numbers, underscore only.</p>
+  }
+
+  <label for="name">Full name</label>
+  <input id="name" type="text" formControlName="name" />
+  @if (f.name.touched && f.name.invalid) { <p class="error">Name is required.</p> }
+
+  <label for="email">Email</label>
+  <input id="email" type="email" formControlName="email" />
+  @if (f.email.touched && f.email.invalid) { <p class="error">Enter a valid email.</p> }
+
+  <label for="picture">Profile picture</label>
+  <input id="picture" type="file" accept="image/*" (change)="onFile($event)" />
+  @if (picture()) { <img class="avatar" [src]="picture()" alt="Preview" /> }
+
+  <label for="password">Password</label>
+  <input id="password" type="password" formControlName="password" />
+  @if (f.password.touched && f.password.invalid) {
+    <p class="error">At least 8 characters, with a letter and a number.</p>
+  }
+
+  <label for="confirm">Confirm password</label>
+  <input id="confirm" type="password" formControlName="confirm" />
+  @if (f.confirm.touched && form.hasError('mismatch')) { <p class="error">Passwords don't match.</p> }
+
+  <label for="card">Credit card (16 digits)</label>
+  <input id="card" type="text" inputmode="numeric" maxlength="16" formControlName="cardNumber" />
+  @if (f.cardNumber.touched && f.cardNumber.invalid) { <p class="error">Enter exactly 16 digits.</p> }
+
+  <label class="check"><input type="checkbox" formControlName="newsletter" /> Send me ArtSpace news</label>
+
+  <label for="theme">Preferred theme</label>
+  <select id="theme" formControlName="theme">
+    <option value="light">Light</option>
+    <option value="dark">Dark</option>
+  </select>
+
+  @if (serverError()) { <p class="error">{{ serverError() }}</p> }
+  <button type="submit">Sign up</button>
+  <p>Already have an account? <a routerLink="/login">Log in</a></p>
+</form>

@@ -1,1 +1,16 @@
-/* You can add global styles to this file, and also import other style files */
+.auth-card {
+  max-width: 460px; margin: 2rem auto; padding: 2rem;
+  background: #fff; border-radius: 12px; box-shadow: 0 4px 18px rgba(0,0,0,.1);
+  label { display: block; margin: .8rem 0 .25rem; font-weight: 600; }
+  input[type=text], input[type=email], input[type=password], input[type=file] {
+    width: 100%; padding: .55rem; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;
+  }
+  .check { display: flex; align-items: center; gap: .5rem; font-weight: 400; }
+  .error { color: #c0392b; font-size: .85rem; margin: .25rem 0 0; }
+  button[type=submit] {
+    width: 100%; margin-top: 1.2rem; padding: .7rem; border: 0; border-radius: 6px;
+    background: #e8a33d; font-weight: 700; cursor: pointer;
+  }
+  .avatar { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin-top: .5rem; }
+}
+@media (max-width: 520px) { .auth-card { margin: 1rem; padding: 1.2rem; } }
