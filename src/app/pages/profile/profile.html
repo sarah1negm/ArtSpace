@@ -1,1 +1,59 @@
-<p>profile works!</p>
+@if (auth.currentUser(); as user) {
+  <section class="profile auth-card">
+    <header class="head">
+      @if (user.picture) {
+        <img class="avatar big" [src]="user.picture" alt="Profile picture" />
+      } @else {
+        <div class="avatar big initials">{{ user.name.charAt(0).toUpperCase() }}</div>
+      }
+      <div>
+        <h1>{{ user.name }}</h1>
+        <span class="badge">{{ user.role }}</span>
+      </div>
+    </header>
+
+    @if (saved()) { <p class="ok">Profile updated ✔</p> }
+
+    @if (!editing()) {
+      <dl>
+        <dt>Username</dt><dd>{{ user.username }}</dd>
+        <dt>Email</dt><dd>{{ user.email }}</dd>
+        <dt>Card</dt><dd>•••• •••• •••• {{ user.cardLast4 }}</dd>
+        <dt>Theme</dt><dd>{{ user.preferences.theme }}</dd>
+        <dt>Newsletter</dt><dd>{{ user.preferences.newsletter ? 'Subscribed' : 'Not subscribed' }}</dd>
+      </dl>
+
+      <h3>Your access as {{ user.role }}</h3>
+      <ul>
+        @for (item of roleAccess(); track item) { <li>{{ item }}</li> }
+      </ul>
+
+      <button type="button" class="primary-btn" (click)="startEdit()">Edit profile</button>
+    } @else {
+      <form [formGroup]="form" (ngSubmit)="save()" novalidate>
+        <label for="name">Full name</label>
+        <input id="name" type="text" formControlName="name" />
+
+        <label for="email">Email</label>
+        <input id="email" type="email" formControlName="email" />
+        @if (form.controls.email.touched && form.controls.email.invalid) { <p class="error">Enter a valid email.</p> }
+
+        <label for="pic">Profile picture</label>
+        <input id="pic" type="file" accept="image/*" (change)="onFile($event)" />
+        @if (picture()) { <img class="avatar" [src]="picture()" alt="Preview" /> }
+
+        <label for="theme">Theme</label>
+        <select id="theme" formControlName="theme">
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+        </select>
+
+        <label class="check"><input type="checkbox" formControlName="newsletter" /> Send me ArtSpace news</label>
+
+        @if (error()) { <p class="error">{{ error() }}</p> }
+        <button type="submit">Save changes</button>
+        <button type="button" class="link-btn" (click)="cancel()">Cancel</button>
+      </form>
+    }
+  </section>
+}

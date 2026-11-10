@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, effect, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { Navbar } from './shared/navbar/navbar';
 import { Footer } from './shared/footer/footer';
@@ -11,5 +11,11 @@ import { AuthService } from './core/services/auth.service';
   styleUrl: './app.scss',
 })
 export class App {
-  constructor() { inject(AuthService).seedDemoUsers(); }
+  constructor() {
+    const auth = inject(AuthService);
+    auth.seedDemoUsers();
+    effect(() => {
+      document.documentElement.setAttribute('data-theme', auth.currentUser()?.preferences.theme ?? 'light');
+    });
+  }
 }

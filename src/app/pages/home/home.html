@@ -1,1 +1,44 @@
-<p>home works!</p>
+<section class="hero">
+  <h1>Where art students learn, create, and sell</h1>
+  <p>ArtSpace is the art school's home for studio courses, an online gallery of student work, and transparent school finances.</p>
+  <div class="actions">
+    <a routerLink="/gallery" class="btn primary">Explore the gallery</a>
+    @if (!auth.isLoggedIn()) {
+      <a routerLink="/login" class="btn">Login</a>
+      <a routerLink="/signup" class="btn">Sign up</a>
+    }
+    <a routerLink="/profile" class="btn">My profile</a>
+  </div>
+</section>
+
+<section class="about">
+  <h2>What is ArtSpace?</h2>
+  <div class="cards">
+    @for (f of features; track f.title) {
+      <article class="card">
+        <span class="icon">{{ f.icon }}</span>
+        <h3>{{ f.title }}</h3>
+        <p>{{ f.text }}</p>
+      </article>
+    }
+  </div>
+</section>
+
+<section class="previews">
+  <h2>Featured artwork</h2>
+  @defer (on viewport) {
+    <div class="grid">
+      @for (a of artworks; track a.id) {
+        <a routerLink="/gallery" class="art">
+          <img [src]="a.image" [alt]="a.title" loading="lazy" width="400" height="300" />
+          <div class="cap">
+            <strong>{{ a.title }}</strong>
+            <span>{{ a.artist }} · {{ a.price }} EGP</span>
+          </div>
+        </a>
+      }
+    </div>
+  } @placeholder {
+    <div class="placeholder">Loading artwork…</div>
+  }
+</section>
