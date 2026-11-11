@@ -1,0 +1,32 @@
+<section class="marketplace">
+  <header class="page-header">
+    <div>
+      <h1>ArtSpace Gallery</h1>
+      <p>Explore and purchase artwork created by our students.</p>
+    </div>
+    <a class="button secondary" routerLink="/gallery/cart"
+      >Cart ({{ cartService.items().length }})</a
+    >
+  </header>
+  <div class="gallery">
+    @for (artwork of artworks; track artwork.id) {
+      <article class="artwork-card">
+        <a class="artwork-link" [routerLink]="['/gallery', artwork.id]">
+          <img
+            [src]="artwork.image"
+            [alt]="artwork.title"
+            width="800"
+            height="600"
+            loading="lazy"
+          />
+          <h2>{{ artwork.title }}</h2>
+        </a>
+        <div class="card-content">
+          <p>Artist: {{ artwork.artist }}</p>
+          <p class="price">{{ artwork.price | currency: 'USD' }}</p>
+          <app-add-to-cart [artwork]="artwork" />
+        </div>
+      </article>
+    }
+  </div>
+</section>

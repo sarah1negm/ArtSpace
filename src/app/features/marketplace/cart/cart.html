@@ -1,0 +1,40 @@
+<section class="marketplace">
+  <header class="page-header">
+    <h1>Your Shopping Cart</h1>
+    <a routerLink="/gallery">Continue exploring</a>
+  </header>
+  @if (cartService.items().length) {
+    <p role="status">{{ cartService.items().length }} item(s) in your cart.</p>
+    <ul class="cart-list">
+      @for (artwork of cartService.items(); track $index) {
+        <li>
+          <a [routerLink]="['/gallery', artwork.id]"
+            ><img [src]="artwork.image" [alt]="artwork.title" width="120" height="90"
+          /></a>
+          <div class="info">
+            <a [routerLink]="['/gallery', artwork.id]"
+              ><h2>{{ artwork.title }}</h2></a
+            >
+            <p>{{ artwork.artist }}</p>
+            <p>{{ artwork.price | currency: 'USD' }}</p>
+          </div>
+          <button
+            class="button secondary"
+            type="button"
+            [attr.aria-label]="'Remove ' + artwork.title"
+            (click)="cartService.removeFromCart($index)"
+          >
+            Remove
+          </button>
+        </li>
+      }
+    </ul>
+    <p class="price" aria-live="polite">Total: {{ cartService.total() | currency: 'USD' }}</p>
+  } @else {
+    <div class="empty">
+      <h2>Your cart is empty</h2>
+      <p>Find something you love in our student gallery.</p>
+      <a class="button" routerLink="/gallery">Browse artworks</a>
+    </div>
+  }
+</section>

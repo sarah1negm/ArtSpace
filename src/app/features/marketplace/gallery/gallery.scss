@@ -1,0 +1,32 @@
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: 1.5rem;
+}
+.artwork-card {
+  background: var(--card);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px #00000014;
+}
+.artwork-link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+.artwork-link img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+}
+.artwork-link h2 {
+  margin: 1rem 1.25rem 0;
+}
+.artwork-link:hover h2 {
+  text-decoration: underline;
+}
+.card-content {
+  padding: 0 1.25rem 1.25rem;
+}
