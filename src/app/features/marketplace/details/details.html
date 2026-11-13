@@ -1,0 +1,20 @@
+<section class="marketplace">
+  <header class="page-header">
+    <a routerLink="/gallery">Back to gallery</a><a routerLink="/gallery/cart">View cart</a>
+  </header>
+  @if (artwork(); as item) {
+    <article class="details">
+      <img [src]="item.image" [alt]="item.title" width="800" height="600" />
+      <div>
+        <h1>{{ item.title }}</h1>
+        <p>Artist: {{ item.artist }}</p>
+        <p>{{ item.description }}</p>
+        <p class="price">{{ item.price | currency: 'USD' }}</p>
+        <app-add-to-cart [artwork]="item" />
+      </div>
+    </article>
+  } @else {
+    <h1>Artwork not found</h1>
+    <p>This artwork is not in our collection. Browse the gallery to discover available artworks.</p>
+  }
+</section>

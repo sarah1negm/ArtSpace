@@ -1,0 +1,31 @@
+.cart-list {
+  list-style: none;
+  padding: 0;
+}
+li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  align-items: center;
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+  background: var(--card);
+  border-radius: 12px;
+}
+img {
+  display: block;
+  object-fit: cover;
+  border-radius: 8px;
+}
+.info {
+  flex: 1;
+  min-width: 140px;
+}
+h2 {
+  margin: 0;
+}
+.empty {
+  padding: 2rem;
+  background: var(--card);
+  border-radius: 12px;
+}
