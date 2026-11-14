@@ -15,10 +15,10 @@ describe('Gallery', () => {
     await fixture.whenStable();
     const element: HTMLElement = fixture.nativeElement;
     expect(element.querySelectorAll('.artwork-card').length).toBe(ARTWORKS.length);
-    expect(element.querySelector('.artwork-link')?.getAttribute('href')).toBe('/gallery/1');
+    expect(element.querySelector('.artwork-link')?.getAttribute('href')).toBe('/gallery/3');
     element.querySelector<HTMLButtonElement>('app-add-to-cart button')!.click();
     await fixture.whenStable();
-    expect(TestBed.inject(CartService).items()).toEqual([ARTWORKS[0]]);
+    expect(TestBed.inject(CartService).items()).toEqual([ARTWORKS[2]]);
     expect(element.textContent).toContain('Cart (1)');
     fixture.destroy();
   });

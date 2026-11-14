@@ -14,6 +14,7 @@ export class ListingsService {
       price: item.price,
       image: item.imageUrl,
       category: item.category,
+      popularity: 0,
     })),
   );
   readonly all = computed(() => [...this.studentListings(), ...ARTWORKS]);
