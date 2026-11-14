@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600" role="img" aria-labelledby="title desc">
+<title id="title">Quiet Garden</title><desc id="desc">A quiet walled garden with flowering plants, a stone path, and a small fountain.</desc>
+<path fill="#e4d9bd" d="M0 0h800v600H0z"/><path d="M0 370Q180 280 400 370T800 340V600H0Z" fill="#8fa58a"/>
+<path d="M300 600q-30-105 110-232h76q-108 111 0 232Z" fill="#d5c7a5"/>
+<path d="M70 367V134a116 116 0 0 1 232 0v233Z" fill="#597c72"/><path d="M102 367V134a84 84 0 0 1 168 0v233Z" fill="#a9c2aa"/>
+<g fill="#547b58"><ellipse cx="80" cy="480" rx="118" ry="66"/><ellipse cx="719" cy="474" rx="128" ry="83"/></g>
+<g stroke="#4e7052" stroke-width="9" fill="none"><path d="M105 430V205m0 72-52-43m52 82 60-55M658 423V175m0 85 57-42m-57 96-57-61"/></g>
+<g fill="#6f956b"><ellipse cx="58" cy="223" rx="37" ry="22" transform="rotate(30 58 223)"/><ellipse cx="157" cy="260" rx="40" ry="22" transform="rotate(-30 157 260)"/><ellipse cx="710" cy="211" rx="43" ry="24" transform="rotate(-25 710 211)"/><ellipse cx="607" cy="250" rx="38" ry="22" transform="rotate(30 607 250)"/></g>
+<path d="M343 393q62 39 124 0v17q-62 47-124 0zm48 27h28v75h-28zm-32 74h92v16h-92z" fill="#b7b6a2"/>
+<g fill="#dca59e"><circle cx="49" cy="459" r="15"/><circle cx="106" cy="482" r="13"/><circle cx="150" cy="448" r="14"/><circle cx="654" cy="465" r="14"/><circle cx="714" cy="435" r="16"/><circle cx="766" cy="484" r="14"/></g>
+</svg>
