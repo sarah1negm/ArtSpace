@@ -29,6 +29,17 @@
       </ul>
 
       <button type="button" class="primary-btn" (click)="startEdit()">Edit profile</button>
+      @if (user.role === 'student') {
+        <h2>My artwork listings</h2>
+        <ul>
+          @for (artwork of listings(); track artwork.id) {
+            <li><a [routerLink]="['/gallery', artwork.id]">{{ artwork.title }}</a></li>
+          } @empty {
+            <li>No artwork listings yet.</li>
+          }
+        </ul>
+        <a routerLink="/student/artwork">Manage artwork listings</a>
+      }
     } @else {
       <form [formGroup]="form" (ngSubmit)="save()" novalidate>
         <label for="name">Full name</label>

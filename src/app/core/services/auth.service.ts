@@ -6,6 +6,7 @@ export class AuthService {
   private readonly USERS_KEY = 'artspace_users';
   private readonly SESSION_KEY = 'artspace_session';
   private readonly COOKIE = 'artspace_remember';
+  private readonly usersRevision = signal(0);
 
   readonly currentUser = signal<User | null>(this.loadSession());
   readonly isLoggedIn = computed(() => this.currentUser() !== null);
@@ -17,10 +18,25 @@ export class AuthService {
   }
   private saveUsers(users: User[]) {
     localStorage.setItem(this.USERS_KEY, JSON.stringify(users));
+    this.usersRevision.update(value => value + 1);
+  }
+  getStudentArtists(): { id: string; name: string }[] {
+    this.usersRevision();
+    try {
+      return this.getUsers()
+        .filter(user => user.role === 'student')
+        .map(({ id, name }) => ({ id, name }));
+    } catch {
+      return [];
+    }
   }
   private loadSession(): User | null {
-    const id = sessionStorage.getItem(this.SESSION_KEY);
-    return this.getUsers().find(u => u.id === id) ?? null;
+    try {
+      const id = sessionStorage.getItem(this.SESSION_KEY);
+      return id ? this.getUsers().find(u => u.id === id) ?? null : null;
+    } catch {
+      return null;
+    }
   }
   private async hash(text: string): Promise<string> {
     const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));

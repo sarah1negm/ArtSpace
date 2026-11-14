@@ -1,10 +1,11 @@
 export interface Artwork {
-  readonly id: number;
+  readonly id: number | string;
   readonly title: string;
   readonly artist: string;
   readonly description: string;
   readonly price: number;
   readonly image: string;
+  readonly category?: 'Painting' | 'Print' | 'Other';
 }
 // Placeholder photography for the mock collection.
 export const ARTWORKS: readonly Artwork[] = [

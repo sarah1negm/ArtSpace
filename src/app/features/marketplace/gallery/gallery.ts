@@ -2,7 +2,7 @@ import { Component, inject } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { CartService } from '../cart';
-import { ARTWORKS } from '../artworks';
+import { ListingsService } from '../listings.service';
 import { AddToCart } from '../shared/add-to-cart';
 
 @Component({
@@ -13,5 +13,5 @@ import { AddToCart } from '../shared/add-to-cart';
 })
 export class Gallery {
   readonly cartService: CartService = inject(CartService);
-  readonly artworks = ARTWORKS;
+  readonly artworks = inject(ListingsService).all;
 }
