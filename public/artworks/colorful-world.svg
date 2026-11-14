@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600" role="img" aria-labelledby="title desc">
+<title id="title">Colorful World</title><desc id="desc">An abstract collage of colorful circles, arches, and flowing botanical shapes.</desc>
+<path fill="#f3e6d3" d="M0 0h800v600H0z"/><path fill="#e59151" d="M0 0h290v305H0z"/><circle cx="290" cy="305" r="170" fill="#d06064"/>
+<path d="M438 0h202v231a101 101 0 0 1-202 0Z" fill="#7f719d"/><path d="M489 0h100v231a50 50 0 0 1-100 0Z" fill="#f3e6d3"/>
+<path d="M0 600V470a120 120 0 0 1 240 0v130Z" fill="#3e7875"/><path d="M63 600V470a57 57 0 0 1 114 0v130Z" fill="#f0bb58"/>
+<circle cx="689" cy="438" r="143" fill="#e7b74f"/><path d="M385 600V399q0-97 89-126v327Z" fill="#365c69"/>
+<path d="M423 443q-119 0-114-95 111-9 114 95m0 95q120 3 117-96-115-12-117 96" fill="#98ab8a"/>
+<circle cx="130" cy="120" r="60" fill="#f5ce7a"/><circle cx="698" cy="99" r="24" fill="#c96663"/>
+<g fill="none" stroke="#f3e6d3" stroke-width="5"><path d="M201 270q73-65 146 0m-146 28q73-65 146 0m-146 28q73-65 146 0"/></g>
+</svg>

@@ -22,12 +22,12 @@ describe('Cart page', () => {
     const fixture = TestBed.createComponent(Cart);
     await fixture.whenStable();
     const element: HTMLElement = fixture.nativeElement;
-    expect(element.textContent).toContain('Total: $320.00');
-    element.querySelector<HTMLButtonElement>('button')!.click();
+    expect(element.textContent?.replace(/\s/g, '')).toContain('Total:EGP320.00');
+    element.querySelector<HTMLButtonElement>('button.remove')!.click();
     await fixture.whenStable();
     expect(element.querySelectorAll('li').length).toBe(1);
-    expect(element.textContent).toContain('Total: $200.00');
-    element.querySelector<HTMLButtonElement>('button')!.click();
+    expect(element.textContent?.replace(/\s/g, '')).toContain('Total:EGP200.00');
+    element.querySelector<HTMLButtonElement>('button.remove')!.click();
     await fixture.whenStable();
     expect(element.textContent).toContain('Your cart is empty');
   });

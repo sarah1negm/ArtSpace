@@ -3,33 +3,86 @@
     <h1>Your Shopping Cart</h1>
     <a routerLink="/gallery">Continue exploring</a>
   </header>
+  @if (receipt(); as order) {
+    <section class="empty" role="status">
+      <h2>Demo checkout complete</h2>
+      <p>
+        Simulated order: {{ order.quantity }} item(s), {{ order.total | currency: 'EGP' : 'code' }}.
+        No payment was taken.
+      </p>
+    </section>
+  }
   @if (cartService.items().length) {
     <p role="status">{{ cartService.items().length }} item(s) in your cart.</p>
     <ul class="cart-list">
-      @for (artwork of cartService.items(); track $index) {
+      @for (line of cartService.lines(); track line.artwork.id) {
         <li>
-          <a [routerLink]="['/gallery', artwork.id]"
-            ><img [src]="artwork.image" [alt]="artwork.title" width="120" height="90"
+          <a [routerLink]="['/gallery', line.artwork.id]"
+            ><img [src]="line.artwork.image" [alt]="line.artwork.title" width="120" height="90"
           /></a>
           <div class="info">
-            <a [routerLink]="['/gallery', artwork.id]"
-              ><h2>{{ artwork.title }}</h2></a
+            <a [routerLink]="['/gallery', line.artwork.id]"
+              ><h2>{{ line.artwork.title }}</h2></a
             >
-            <p>{{ artwork.artist }}</p>
-            <p>{{ artwork.price | currency: 'USD' }}</p>
+            <p>{{ line.artwork.artist }}</p>
+            <p>Unit price: {{ line.artwork.price | currency: 'EGP' : 'code' }}</p>
+            <p>Subtotal: {{ line.artwork.price * line.quantity | currency: 'EGP' : 'code' }}</p>
+          </div>
+          <div
+            class="quantity"
+            role="group"
+            [attr.aria-label]="'Quantity for ' + line.artwork.title"
+          >
+            <button
+              type="button"
+              [disabled]="line.quantity === 1"
+              [attr.aria-label]="'Decrease quantity of ' + line.artwork.title"
+              (click)="cartService.setQuantity(line.artwork.id, line.quantity - 1)"
+            >
+              −
+            </button>
+            <span>Quantity: {{ line.quantity }}</span>
+            <button
+              type="button"
+              [disabled]="line.quantity === 99"
+              [attr.aria-label]="'Increase quantity of ' + line.artwork.title"
+              (click)="cartService.setQuantity(line.artwork.id, line.quantity + 1)"
+            >
+              +
+            </button>
           </div>
           <button
-            class="button secondary"
+            class="button secondary remove"
             type="button"
-            [attr.aria-label]="'Remove ' + artwork.title"
-            (click)="cartService.removeFromCart($index)"
+            [attr.aria-label]="'Remove ' + line.artwork.title"
+            (click)="cartService.removeArtwork(line.artwork.id)"
           >
             Remove
           </button>
         </li>
       }
     </ul>
-    <p class="price" aria-live="polite">Total: {{ cartService.total() | currency: 'USD' }}</p>
+    <p class="price" aria-live="polite">
+      Total: {{ cartService.total() | currency: 'EGP' : 'code' }}
+    </p>
+    <p>This is a simulated checkout. No payment details or real charges.</p>
+    @if (confirming()) {
+      <section class="empty" aria-label="Confirm simulated checkout">
+        <h2>Confirm demo order</h2>
+        <p>
+          {{ cartService.items().length }} item(s) for
+          {{ cartService.total() | currency: 'EGP' : 'code' }}. Confirming clears your cart.
+        </p>
+        <button type="button" class="button" (click)="checkout()">Confirm demo order</button>
+        <button type="button" class="button secondary" (click)="confirming.set(false)">
+          Cancel
+        </button>
+      </section>
+    } @else {
+      <button type="button" class="button" (click)="confirming.set(true); receipt.set(null)">
+        Simulated checkout
+      </button>
+    }
   } @else {
     <div class="empty">
       <h2>Your cart is empty</h2>

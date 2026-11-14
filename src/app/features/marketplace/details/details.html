@@ -8,8 +8,9 @@
       <div>
         <h1>{{ item.title }}</h1>
         <p>Artist: {{ item.artist }}</p>
+        <p>{{ item.category }} · {{ item.popularity }} likes</p>
         <p>{{ item.description }}</p>
-        <p class="price">{{ item.price | currency: 'USD' }}</p>
+        <p class="price">{{ item.price | currency: 'EGP' : 'code' }}</p>
         <app-add-to-cart [artwork]="item" />
       </div>
     </article>

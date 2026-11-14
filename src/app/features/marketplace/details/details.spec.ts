@@ -15,6 +15,8 @@ describe('Marketplace routes and artwork details', () => {
   it('loads details, adds to cart, and updates when the id changes', async () => {
     const harness = await RouterTestingHarness.create('/gallery/1');
     expect(harness.routeNativeElement?.textContent).toContain('Sunset Dreams');
+    expect(harness.routeNativeElement?.textContent).toContain('EGP');
+    expect(harness.routeNativeElement?.textContent).toContain('Painting');
     harness.routeNativeElement!.querySelector<HTMLButtonElement>('button')!.click();
     expect(TestBed.inject(CartService).total()).toBe(120);
     await harness.navigateByUrl('/gallery/2');

@@ -1,11 +1,11 @@
-import { Component, inject, input, OnDestroy, signal } from '@angular/core';
+import { Component, computed, inject, input, OnDestroy, signal } from '@angular/core';
 import { Artwork } from '../artworks';
 import { CartService } from '../cart';
 
 @Component({
   selector: 'app-add-to-cart',
-  template: `<button type="button" [class.added]="added()" (click)="add()">
-      {{ added() ? 'Added to Cart' : 'Add to Cart' }}
+  template: `<button type="button" [class.added]="added()" [disabled]="atLimit()" (click)="add()">
+      {{ atLimit() ? 'Quantity limit reached' : added() ? 'Added to Cart' : 'Add to Cart' }}
     </button>
     <span class="status" role="status">{{
       added() ? artwork().title + ' added to cart.' : ''
@@ -54,8 +54,12 @@ export class AddToCart implements OnDestroy {
   readonly artwork = input.required<Artwork>();
   readonly added = signal(false);
   private readonly cart = inject(CartService);
+  readonly atLimit = computed(
+    () => this.cart.items().filter((item) => item.id === this.artwork().id).length >= 99,
+  );
   private timer?: ReturnType<typeof setTimeout>;
   add(): void {
+    if (this.atLimit()) return;
     this.cart.addToCart(this.artwork());
     this.added.set(true);
     clearTimeout(this.timer);
