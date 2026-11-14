@@ -16,7 +16,7 @@
               ><h2>{{ artwork.title }}</h2></a
             >
             <p>{{ artwork.artist }}</p>
-            <p>{{ artwork.price | currency: 'USD' }}</p>
+            <p>{{ artwork.price | currency: 'EGP' : 'code' }}</p>
           </div>
           <button
             class="button secondary"
@@ -29,7 +29,7 @@
         </li>
       }
     </ul>
-    <p class="price" aria-live="polite">Total: {{ cartService.total() | currency: 'USD' }}</p>
+    <p class="price" aria-live="polite">Total: {{ cartService.total() | currency: 'EGP' : 'code' }}</p>
   } @else {
     <div class="empty">
       <h2>Your cart is empty</h2>

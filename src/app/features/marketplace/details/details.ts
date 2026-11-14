@@ -2,7 +2,7 @@ import { Component, computed, inject } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { ARTWORKS } from '../artworks';
+import { ListingsService } from '../listings.service';
 import { AddToCart } from '../shared/add-to-cart';
 
 @Component({
@@ -13,7 +13,8 @@ import { AddToCart } from '../shared/add-to-cart';
 })
 export class ArtworkDetails {
   private readonly params = toSignal(inject(ActivatedRoute).paramMap);
+  private readonly listings = inject(ListingsService);
   readonly artwork = computed(() =>
-    ARTWORKS.find((item) => String(item.id) === this.params()?.get('id')),
+    this.listings.all().find((item) => String(item.id) === this.params()?.get('id')),
   );
 }

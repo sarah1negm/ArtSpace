@@ -9,7 +9,7 @@
     >
   </header>
   <div class="gallery">
-    @for (artwork of artworks; track artwork.id) {
+    @for (artwork of artworks(); track artwork.id) {
       <article class="artwork-card">
         <a class="artwork-link" [routerLink]="['/gallery', artwork.id]">
           <img
@@ -23,7 +23,7 @@
         </a>
         <div class="card-content">
           <p>Artist: {{ artwork.artist }}</p>
-          <p class="price">{{ artwork.price | currency: 'USD' }}</p>
+          <p class="price">{{ artwork.price | currency: 'EGP' : 'code' }}</p>
           <app-add-to-cart [artwork]="artwork" />
         </div>
       </article>

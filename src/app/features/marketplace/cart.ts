@@ -1,21 +1,32 @@
-import { computed, Injectable, signal } from '@angular/core';
-import { ARTWORKS, Artwork } from './artworks';
+import { computed, inject, Injectable, signal } from '@angular/core';
+import { Artwork } from './artworks';
+import { ListingsService } from './listings.service';
 
 @Injectable({ providedIn: 'root' })
 export class CartService {
   private readonly storageKey = 'artspace-cart';
-  private readonly cartItems = signal<readonly Artwork[]>(this.loadCart());
-  readonly items = this.cartItems.asReadonly();
+  private readonly listings = inject(ListingsService);
+  private readonly cartIds = signal<Artwork['id'][]>(this.loadCart());
+  readonly items = computed(() =>
+    this.cartIds().flatMap((id) => {
+      const item = this.listings.all().find((candidate) => candidate.id === id);
+      return item ? [item] : [];
+    }),
+  );
   readonly total = computed(() => this.items().reduce((sum, item) => sum + item.price, 0));
 
   addToCart(artwork: Artwork): void {
-    const item = ARTWORKS.find((candidate) => candidate.id === artwork.id);
+    const item = this.listings.all().find((candidate) => candidate.id === artwork.id);
     if (!item) return;
-    this.cartItems.update((items) => [...items, item]);
+    this.cartIds.set([...this.items().map((item) => item.id), item.id]);
     this.saveCart();
   }
   removeFromCart(index: number): void {
-    this.cartItems.update((items) => items.filter((_, i) => i !== index));
+    this.cartIds.set(
+      this.items()
+        .filter((_, i) => i !== index)
+        .map((item) => item.id),
+    );
     this.saveCart();
   }
   private saveCart(): void {
@@ -25,13 +36,13 @@ export class CartService {
       /* Keep the cart usable when storage is unavailable. */
     }
   }
-  private loadCart(): readonly Artwork[] {
+  private loadCart(): Artwork['id'][] {
     try {
       const saved: unknown = JSON.parse(localStorage.getItem(this.storageKey) ?? '[]');
       if (!Array.isArray(saved)) return [];
       return saved.flatMap((value) => {
-        const item = ARTWORKS.find((artwork) => artwork.id === value?.id);
-        return item ? [item] : [];
+        const id = value?.id;
+        return typeof id === 'string' || typeof id === 'number' ? [id] : [];
       });
     } catch {
       return [];
