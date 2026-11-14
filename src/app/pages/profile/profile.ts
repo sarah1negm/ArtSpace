@@ -1,15 +1,18 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../core/services/auth.service';
+import { RouterLink } from '@angular/router';
+import { StudentService } from '../../features/student/student.service';
 
 @Component({
   selector: 'app-profile',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './profile.html',
   styleUrl: './profile.scss',
 })
 export class Profile {
   auth = inject(AuthService);
+  readonly listings = inject(StudentService).artworks;
   private fb = inject(FormBuilder);
 
   editing = signal(false);

@@ -14,7 +14,7 @@ export class StudentService {
   });
   private readonly key = computed(() => {
     const student = this.student();
-    return student ? `artspace_student_v1_${student.id}` : null;
+    return student ? this.storageKey(student.id) : null;
   });
   private readonly saved = signal<{ key: string; records: StudentRecords } | null>(null);
   private readonly records = computed(() => {
@@ -33,6 +33,15 @@ export class StudentService {
   readonly courses = COURSES;
   readonly membership = MEMBERSHIP;
   readonly artworks = computed(() => this.records().artworks);
+  readonly publicListings = computed(() => {
+    const saved = this.saved();
+    return this.auth.getStudentArtists().flatMap((artist) => {
+      const key = this.storageKey(artist.id);
+      const records =
+        saved?.key === key ? saved.records : this.storage.getLocal(key, INITIAL_RECORDS);
+      return records.artworks.map((artwork) => ({ ...artwork, artist: artist.name }));
+    });
+  });
   readonly fees = computed(() =>
     FEES.map((fee) => {
       const invoice = this.records().invoices.find((item) => item.feeId === fee.id);
@@ -101,7 +110,11 @@ export class StudentService {
       !Number.isFinite(price) ||
       price <= 0 ||
       !['Painting', 'Print', 'Other'].includes(draft.category) ||
-      !/^https?:\/\/\S+$/i.test(imageUrl)
+      !(
+        /^https?:\/\/\S+$/i.test(imageUrl) ||
+        (imageUrl.length <= 666_700 &&
+          /^data:image\/(?:jpeg|png|webp|gif);base64,[A-Za-z0-9+/]+={0,2}$/.test(imageUrl))
+      )
     ) {
       return false;
     }
@@ -135,6 +148,10 @@ export class StudentService {
     if (!key) return;
     this.storage.setLocal(key, records);
     this.saved.set({ key, records });
+  }
+
+  private storageKey(id: string): string {
+    return `artspace_student_v1_${id}`;
   }
 
   private today(): string {

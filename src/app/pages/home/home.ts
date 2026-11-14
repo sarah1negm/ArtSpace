@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { ListingsService } from '../../features/marketplace/listings.service';
 
 @Component({
   selector: 'app-home',
@@ -10,6 +11,7 @@ import { AuthService } from '../../core/services/auth.service';
 })
 export class Home {
   auth = inject(AuthService);
+  readonly studentListings = inject(ListingsService).studentListings;
 
   features = [
     { icon: '🎨', title: 'For students', text: 'Manage your courses and studio fees, and list your artwork for sale.' },

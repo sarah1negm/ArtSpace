@@ -5,7 +5,7 @@ export interface Artwork {
   readonly category: ArtworkCategory;
   /** Mock likes, used for popularity sorting. */
   readonly popularity: number;
-  readonly id: number;
+  readonly id: number | string;
   readonly title: string;
   readonly artist: string;
   readonly description: string;

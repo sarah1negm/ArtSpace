@@ -28,6 +28,15 @@
   <h2>Featured artwork</h2>
   @defer (on viewport) {
     <div class="grid">
+      @for (a of studentListings(); track a.id) {
+        <a [routerLink]="['/gallery', a.id]" class="art">
+          <img [src]="a.image" [alt]="a.title" loading="lazy" width="400" height="300" />
+          <div class="cap">
+            <strong>{{ a.title }}</strong>
+            <span>{{ a.artist }} · {{ a.price }} EGP</span>
+          </div>
+        </a>
+      }
       @for (a of artworks; track a.id) {
         <a routerLink="/gallery" class="art">
           <img [src]="a.image" [alt]="a.title" loading="lazy" width="400" height="300" />

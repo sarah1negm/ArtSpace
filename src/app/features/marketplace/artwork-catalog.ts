@@ -1,8 +1,8 @@
-import { Injectable, signal } from '@angular/core';
-import { ARTWORKS, Artwork } from './artworks';
+import { inject, Injectable } from '@angular/core';
+import { ListingsService } from './listings.service';
 
-/** Shared catalogue boundary. Future ListingsService mapping belongs here. */
+/** Shared reactive catalogue for both mock and student-created artworks. */
 @Injectable({ providedIn: 'root' })
 export class ArtworkCatalog {
-  readonly artworks = signal<readonly Artwork[]>(ARTWORKS).asReadonly();
+  readonly artworks = inject(ListingsService).all;
 }
