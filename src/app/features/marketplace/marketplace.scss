@@ -46,3 +46,12 @@ a {
   outline: 3px solid #e8a33d;
   outline-offset: 4px;
 }
+@media (width < 600px) {
+  .marketplace {
+    margin: 1.5rem auto;
+    padding: 0 1rem;
+  }
+  .page-header {
+    align-items: flex-start;
+  }
+}

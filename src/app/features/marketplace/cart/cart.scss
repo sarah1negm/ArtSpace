@@ -29,3 +29,34 @@ h2 {
   background: var(--card);
   border-radius: 12px;
 }
+.quantity {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+}
+.quantity button {
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 6px;
+  font: inherit;
+  cursor: pointer;
+  background: var(--card);
+  color: inherit;
+  border: 1px solid currentColor;
+}
+.quantity button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+@media (width < 600px) {
+  li {
+    padding: 1rem;
+    gap: 1rem;
+  }
+  .quantity {
+    width: 100%;
+  }
+  .remove {
+    width: 100%;
+  }
+}

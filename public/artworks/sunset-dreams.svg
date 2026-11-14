@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600" role="img" aria-labelledby="title desc">
+<title id="title">Sunset Dreams</title><desc id="desc">A golden sun sets over violet mountains and a warm reflective lake.</desc>
+<defs><linearGradient id="sky" x2="0" y2="1"><stop stop-color="#482c6c"/><stop offset=".55" stop-color="#e77d82"/><stop offset="1" stop-color="#f7cc91"/></linearGradient><linearGradient id="water" x2="0" y2="1"><stop stop-color="#f3ab8b"/><stop offset="1" stop-color="#38325b"/></linearGradient></defs>
+<path fill="url(#sky)" d="M0 0h800v600H0z"/><circle cx="510" cy="245" r="88" fill="#ffdf9b"/>
+<path d="M0 300 140 180 300 319 419 235 590 335 730 220 800 286V600H0Z" fill="#76557d"/>
+<path d="M0 358 165 275 320 378 480 311 670 368 800 304V600H0Z" fill="#453856"/>
+<path d="M0 385Q250 360 400 384T800 383V600H0Z" fill="url(#water)"/>
+<g fill="none" stroke="#ffd4a2" stroke-linecap="round"><path d="M454 410h112m-140 24h166m-195 27h225m-250 32h275m-210 37h146" stroke-width="6"/><path d="M62 448h120m-82 61h124m421-65h92m-47 92h80" opacity=".4" stroke-width="3"/></g>
+<path d="M0 547q120-55 256 53H0m544 0q150-93 256-66v66" fill="#27263f"/>
+</svg>

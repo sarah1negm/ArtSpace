@@ -8,8 +8,54 @@
       >Cart ({{ cartService.items().length }})</a
     >
   </header>
+  <section class="filters" aria-label="Search and filter artworks">
+    <label
+      >Search artwork name<input
+        type="search"
+        [value]="search()"
+        (input)="search.set($any($event.target).value)"
+        placeholder="e.g. Ocean"
+    /></label>
+    <label
+      >Category<select [value]="category()" (change)="setCategory($any($event.target).value)">
+        <option value="">All categories</option>
+        @for (item of categories; track item) {
+          <option [value]="item">{{ item }}</option>
+        }
+      </select></label
+    >
+    <label
+      >Minimum price (EGP)<input
+        type="number"
+        min="0"
+        step="0.01"
+        [value]="minPrice() ?? ''"
+        (input)="setPrice('min', $any($event.target).value)"
+    /></label>
+    <label
+      >Maximum price (EGP)<input
+        type="number"
+        min="0"
+        step="0.01"
+        [value]="maxPrice() ?? ''"
+        (input)="setPrice('max', $any($event.target).value)"
+    /></label>
+    <label
+      >Sort by<select [value]="sort()" (change)="setSort($any($event.target).value)">
+        <option value="title">Name</option>
+        <option value="price-asc">Price: low to high</option>
+        <option value="price-desc">Price: high to low</option>
+        <option value="popularity">Most popular (likes)</option>
+      </select></label
+    >
+    <button type="button" class="button secondary" (click)="resetFilters()">Reset filters</button>
+  </section>
+  @if (invalidRange()) {
+    <p role="alert">Minimum price must not exceed maximum price.</p>
+  }
+  <p role="status">{{ filteredArtworks().length }} artwork(s) found.</p>
   <div class="gallery">
-    @for (artwork of artworks; track artwork.id) {
+    @for (artwork of filteredArtworks(); track artwork.id) {
       <article class="artwork-card">
         <a class="artwork-link" [routerLink]="['/gallery', artwork.id]">
           <img
@@ -23,10 +69,15 @@
         </a>
         <div class="card-content">
           <p>Artist: {{ artwork.artist }}</p>
-          <p class="price">{{ artwork.price | currency: 'USD' }}</p>
+          <p class="category">{{ artwork.category }}</p>
+          <p>{{ artwork.description }}</p>
+          <p>{{ artwork.popularity }} likes</p>
+          <p class="price">{{ artwork.price | currency: 'EGP' : 'code' }}</p>
           <app-add-to-cart [artwork]="artwork" />
         </div>
       </article>
+    } @empty {
+      <p>No artworks match your filters. Try another search or reset the filters.</p>
     }
   </div>
 </section>
