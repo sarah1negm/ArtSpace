@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600" role="img" aria-labelledby="title desc">
+<title id="title">Blue Studio</title><desc id="desc">A blue artist studio with a sunlit window, easel, and terracotta vase.</desc>
+<path fill="#577f9c" d="M0 0h800v600H0z"/><path fill="#31546f" d="M0 445h800v155H0z"/>
+<path fill="#a4c8d1" d="M68 50h245v304H68z"/><path fill="#e3e9d1" d="M83 65h215v274H83z"/>
+<path d="M83 252q83-90 215-32v119H83Z" fill="#86aaa0"/><path d="M190 65v274M83 198h215" stroke="#a4c8d1" stroke-width="12"/>
+<path d="M375 550 480 185l112 365m-200-90h184" stroke="#c8a070" stroke-width="15" fill="none"/>
+<path fill="#f4e1b9" d="M392 158h193v234H392z"/><circle cx="485" cy="241" r="47" fill="#d88961"/><path d="M404 367q54-93 168-20v33H404Z" fill="#76968b"/>
+<path fill="#be8e62" d="M50 433h245v22H50zM75 455h15v115H75zm180 0h15v115h-15z"/>
+<path d="M137 431q-25-62 6-100h49q31 38 6 100Z" fill="#c57858"/><path d="M169 331V240m0 52q-44 0-42-36 42 0 42 36m0-17q40-2 43-37-39-2-43 37" fill="#426f60" stroke="#426f60" stroke-width="4"/>
+</svg>

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600" role="img" aria-labelledby="title desc">
+<title id="title">City Dreams</title><desc id="desc">An imagined city of colorful towers beneath a rose twilight sky.</desc>
+<defs><linearGradient id="sky" x2="0" y2="1"><stop stop-color="#55527e"/><stop offset="1" stop-color="#e2a39a"/></linearGradient></defs>
+<path fill="url(#sky)" d="M0 0h800v600H0z"/><circle cx="633" cy="135" r="57" fill="#f6d79c"/>
+<path d="M0 365h70V255h100v155h53V182h116v190h42V272h115v116h40V215h110v150h55V288h99v312H0Z" fill="#6e6681"/>
+<path fill="#c98c7e" d="M35 390h126v210H35z"/><path fill="#d8b47e" d="M178 308h139v292H178z"/><path fill="#59798b" d="M337 354h124v246H337z"/><path fill="#b9776c" d="M480 281h139v319H480z"/><path fill="#82a3a0" d="M638 375h130v225H638z"/>
+<g fill="#f7dfac"><path d="M61 419h20v31H61zm45 0h20v31h-20zm-45 66h20v31H61zm45 0h20v31h-20zM202 340h23v36h-23zm45 0h23v36h-23zm-45 71h23v36h-23zm45 0h23v36h-23zM363 393h25v38h-25zm0 75h25v38h-25zM507 315h26v39h-26zm48 0h26v39h-26zm-48 77h26v39h-26zm48 0h26v39h-26zM665 412h22v35h-22zm43 0h22v35h-22z"/></g>
+<path d="M0 556q200-45 400-5t400-8v57H0Z" fill="#414759"/>
+</svg>

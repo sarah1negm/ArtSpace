@@ -20,9 +20,9 @@ export class Home {
   ];
 
   artworks = [
-    { id: 1, title: 'Morning Light', artist: 'Student Artist', price: 1200, image: 'https://picsum.photos/seed/art1/400/300' },
-    { id: 2, title: 'Blue Studio', artist: 'Student Artist', price: 900, image: 'https://picsum.photos/seed/art2/400/300' },
-    { id: 3, title: 'City Dreams', artist: 'Student Artist', price: 1500, image: 'https://picsum.photos/seed/art3/400/300' },
-    { id: 4, title: 'Quiet Garden', artist: 'Student Artist', price: 750, image: 'https://picsum.photos/seed/art4/400/300' },
+    { id: 1, title: 'Morning Light', artist: 'Student Artist', price: 1200, image: 'artworks/featured/morning-light.svg' },
+    { id: 2, title: 'Blue Studio', artist: 'Student Artist', price: 900, image: 'artworks/featured/blue-studio.svg' },
+    { id: 3, title: 'City Dreams', artist: 'Student Artist', price: 1500, image: 'artworks/featured/city-dreams.svg' },
+    { id: 4, title: 'Quiet Garden', artist: 'Student Artist', price: 750, image: 'artworks/featured/quiet-garden.svg' },
   ];
 }

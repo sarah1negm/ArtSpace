@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600" role="img" aria-labelledby="title desc">
+<title id="title">Morning Light</title><desc id="desc">Golden morning sunlight falls across rolling hills and a peaceful meadow.</desc>
+<defs><linearGradient id="sky" x2="0" y2="1"><stop stop-color="#d3e6df"/><stop offset="1" stop-color="#f9e0ac"/></linearGradient></defs>
+<path fill="url(#sky)" d="M0 0h800v600H0z"/><circle cx="545" cy="165" r="80" fill="#fff1bf"/>
+<path d="M0 350Q160 180 360 340T800 290V600H0Z" fill="#a2b6a2"/><path d="M0 400Q200 305 400 400T800 350V600H0Z" fill="#668e7b"/>
+<path d="M0 505Q220 350 470 460T800 445V600H0Z" fill="#d4b86f"/><path d="M320 600q130-150 290-183-120 90-160 183Z" fill="#f4daa0"/>
+<g stroke="#506d5b" stroke-width="7" fill="none" stroke-linecap="round"><path d="M60 570v-90m0 34-19-22m19 46 23-29m54 67v-89m0 25-20-20m20 48 20-25m-58 83v-61"/></g>
+<g fill="#f8e7b5"><circle cx="60" cy="479" r="9"/><circle cx="137" cy="485" r="9"/><circle cx="100" cy="538" r="8"/></g>
+</svg>
