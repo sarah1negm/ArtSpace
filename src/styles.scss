@@ -4,18 +4,82 @@ body { margin: 0; background: var(--bg); color: var(--text); font-family: system
 input, select { background: transparent; color: inherit; }
 
 .auth-card {
+  // Auth-only tokens keep other feature styles unchanged.
+  --auth-field-bg: var(--card);
+  --auth-border: #767676;
+  --auth-placeholder: #595959;
+  --auth-link: #563a83;
+  --auth-error: #a42622;
+  --auth-success: #176b3a;
+  --auth-focus: #6b4c9a;
+  --auth-button-bg: #e8a33d;
+  --auth-button-text: #1f1b2e;
+  --auth-disabled-bg: #e4e0e8;
+  --auth-disabled-text: #595360;
+  color-scheme: light;
   max-width: 460px; margin: 2rem auto; padding: 2rem;
-  background: #fff; border-radius: 12px; box-shadow: 0 4px 18px rgba(0,0,0,.1);
+  background: var(--card); color: var(--text);
+  border-radius: 12px; box-shadow: 0 4px 18px rgba(0,0,0,.1);
   label { display: block; margin: .8rem 0 .25rem; font-weight: 600; }
-  input[type=text], input[type=email], input[type=password], input[type=file] {
-    width: 100%; padding: .55rem; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;
+  input[type=text], input[type=email], input[type=password], input[type=file], select {
+    width: 100%; padding: .55rem; border: 1px solid var(--auth-border);
+    border-radius: 6px; box-sizing: border-box;
+    background: var(--auth-field-bg); color: var(--text); font: inherit;
+    caret-color: var(--text);
+  }
+  input::placeholder { color: var(--auth-placeholder); opacity: 1; }
+  input[type=checkbox] { accent-color: var(--auth-focus); }
+  input:is(.ng-invalid.ng-touched, .ng-invalid.ng-dirty, [aria-invalid=true]),
+  select:is(.ng-invalid.ng-touched, .ng-invalid.ng-dirty, [aria-invalid=true]) {
+    border-color: var(--auth-error);
+  }
+  input:autofill {
+    -webkit-text-fill-color: var(--text);
+    box-shadow: 0 0 0 1000px var(--auth-field-bg) inset;
+    caret-color: var(--text);
+  }
+  input::file-selector-button {
+    background: var(--auth-button-bg); color: var(--auth-button-text);
+    border: 1px solid var(--auth-border); border-radius: 4px;
+    padding: .35rem .6rem; margin-right: .6rem; cursor: pointer; font: inherit;
+  }
+  a, a:visited { color: var(--auth-link); text-underline-offset: .15em; }
+  a:hover, .link-btn:hover { text-decoration-thickness: 2px; }
+  :is(input, select, button, a):focus-visible {
+    outline: 3px solid var(--auth-focus); outline-offset: 3px;
+  }
+  input:disabled, select:disabled, button:disabled {
+    background: var(--auth-disabled-bg); color: var(--auth-disabled-text);
+    -webkit-text-fill-color: var(--auth-disabled-text);
+    border: 1px solid var(--auth-border); opacity: 1; cursor: not-allowed;
+  }
+  input:disabled::placeholder { color: var(--auth-disabled-text); }
+  input:disabled::file-selector-button {
+    background: var(--auth-disabled-bg); color: var(--auth-disabled-text); cursor: not-allowed;
   }
   .check { display: flex; align-items: center; gap: .5rem; font-weight: 400; }
-  .error { color: #c0392b; font-size: .85rem; margin: .25rem 0 0; }
+  .error { color: var(--auth-error); font-size: .85rem; margin: .25rem 0 0; }
   button[type=submit] {
     width: 100%; margin-top: 1.2rem; padding: .7rem; border: 0; border-radius: 6px;
-    background: #e8a33d; font-weight: 700; cursor: pointer;
+    background: var(--auth-button-bg); color: var(--auth-button-text);
+    font-weight: 700; cursor: pointer;
+    &:disabled {
+      background: var(--auth-disabled-bg); color: var(--auth-disabled-text);
+      border: 1px solid var(--auth-border); cursor: not-allowed;
+    }
   }
   .avatar { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin-top: .5rem; }
+}
+[data-theme='dark'] .auth-card {
+  --auth-field-bg: #2b2739;
+  --auth-border: #a39bb5;
+  --auth-placeholder: #c3bccf;
+  --auth-link: #d7bbff;
+  --auth-error: #ffb4ab;
+  --auth-success: #8ee3ad;
+  --auth-focus: #f3be63;
+  --auth-disabled-bg: #3c3749;
+  --auth-disabled-text: #c9c3d5;
+  color-scheme: dark;
 }
 @media (max-width: 520px) { .auth-card { margin: 1rem; padding: 1.2rem; } }
