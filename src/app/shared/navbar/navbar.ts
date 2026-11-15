@@ -12,10 +12,13 @@ export class Navbar {
   auth = inject(AuthService);
   private router = inject(Router);
   menuOpen = signal(false);
+  readonly logoutError = signal('');
 
   toggle() { this.menuOpen.update(v => !v); }
   logout() {
-    this.auth.logout();
+    this.logoutError.set('');
+    const result = this.auth.logout();
+    if (!result.ok) { this.logoutError.set(result.error); return; }
     this.menuOpen.set(false);
     this.router.navigate(['/']);
   }

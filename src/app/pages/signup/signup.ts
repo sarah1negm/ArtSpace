@@ -20,10 +20,11 @@ export class Signup {
 
   picture = signal('');
   serverError = signal('');
+  readonly submitting = signal(false);
 
   form = this.fb.nonNullable.group({
     username: ['', [Validators.required, Validators.minLength(3), Validators.pattern(/^[a-zA-Z0-9_]+$/)]],
-    name: ['', Validators.required],
+    name: ['', [Validators.required, Validators.pattern(/\S/)]],
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, Validators.minLength(8), Validators.pattern(/^(?=.*[A-Za-z])(?=.*\d).+$/)]],
     confirm: ['', Validators.required],
@@ -41,17 +42,23 @@ export class Signup {
     this.serverError.set('');
     const reader = new FileReader();
     reader.onload = () => this.picture.set(reader.result as string);
+    reader.onerror = () => this.serverError.set('The picture could not be read. Please choose it again.');
     reader.readAsDataURL(file);
   }
 
   async submit() {
+    if (this.submitting()) return;
+    this.serverError.set('');
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
-    const v = this.form.getRawValue();
-    const res = await this.auth.signup({
-      username: v.username, name: v.name, email: v.email, picture: this.picture(),
-      password: v.password, cardNumber: v.cardNumber, newsletter: v.newsletter, theme: v.theme,
-    });
-    if (res.ok) this.router.navigate(['/login']);
-    else this.serverError.set(res.error);
+    this.submitting.set(true);
+    try {
+      const v = this.form.getRawValue();
+      const res = await this.auth.signup({
+        username: v.username, name: v.name, email: v.email, picture: this.picture(),
+        password: v.password, cardNumber: v.cardNumber, newsletter: v.newsletter, theme: v.theme,
+      });
+      if (res.ok) this.router.navigate(['/login']);
+      else this.serverError.set(res.error);
+    } finally { this.submitting.set(false); }
   }
 }

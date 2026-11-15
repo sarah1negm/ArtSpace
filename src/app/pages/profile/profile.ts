@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, OnDestroy, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../core/services/auth.service';
 import { RouterLink } from '@angular/router';
@@ -10,7 +10,8 @@ import { StudentService } from '../../features/student/student.service';
   templateUrl: './profile.html',
   styleUrl: './profile.scss',
 })
-export class Profile {
+export class Profile implements OnDestroy {
+  private savedTimer?: ReturnType<typeof setTimeout>;
   auth = inject(AuthService);
   readonly listings = inject(StudentService).artworks;
   private fb = inject(FormBuilder);
@@ -21,7 +22,7 @@ export class Profile {
   error = signal('');
 
   form = this.fb.nonNullable.group({
-    name: ['', Validators.required],
+    name: ['', [Validators.required, Validators.pattern(/\S/)]],
     email: ['', [Validators.required, Validators.email]],
     theme: ['light' as 'light' | 'dark'],
     newsletter: [false],
@@ -42,6 +43,7 @@ export class Profile {
     this.form.setValue({ name: u.name, email: u.email, theme: u.preferences.theme, newsletter: u.preferences.newsletter });
     this.picture.set(u.picture);
     this.error.set('');
+    this.saved.set(false);
     this.editing.set(true);
   }
 
@@ -52,20 +54,26 @@ export class Profile {
     this.error.set('');
     const reader = new FileReader();
     reader.onload = () => this.picture.set(reader.result as string);
+    reader.onerror = () => this.error.set('The picture could not be read. Please choose it again.');
     reader.readAsDataURL(file);
   }
 
   save() {
+    clearTimeout(this.savedTimer);
+    this.saved.set(false);
+    this.error.set('');
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
     const v = this.form.getRawValue();
-    this.auth.updateProfile({
+    const result = this.auth.updateProfile({
       name: v.name, email: v.email, picture: this.picture(),
       preferences: { theme: v.theme, newsletter: v.newsletter },
     });
+    if (!result.ok) { this.error.set(result.error); return; }
     this.editing.set(false);
     this.saved.set(true);
-    setTimeout(() => this.saved.set(false), 3000);
+    this.savedTimer = setTimeout(() => this.saved.set(false), 3000);
   }
 
   cancel() { this.editing.set(false); }
+  ngOnDestroy(): void { clearTimeout(this.savedTimer); }
 }

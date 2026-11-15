@@ -1,12 +1,13 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
+import { StorageService } from '../services/storage.service';
 import { Role } from '../models/user.model';
 
 export const authGuard: CanActivateFn = (_route, state) => {
   const auth = inject(AuthService);
   if (auth.isLoggedIn()) return true;
-  sessionStorage.setItem('artspace_return', state.url);
+  inject(StorageService).setSessionString('artspace_return', state.url);
   return inject(Router).createUrlTree(['/login']);
 };
 

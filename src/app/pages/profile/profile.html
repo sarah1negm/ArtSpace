@@ -44,10 +44,11 @@
       <form [formGroup]="form" (ngSubmit)="save()" novalidate>
         <label for="name">Full name</label>
         <input id="name" type="text" formControlName="name" />
+        @if (form.controls.name.touched && form.controls.name.invalid) { <p class="error">Enter your full name.</p> }
 
         <label for="email">Email</label>
         <input id="email" type="email" formControlName="email" />
-        @if (form.controls.email.touched && form.controls.email.invalid) { <p class="error">Enter a valid email.</p> }
+        @if (form.controls.email.touched && form.controls.email.invalid) { <p class="error">{{ form.controls.email.hasError('required') ? 'Enter your email address.' : 'Enter a valid email address.' }}</p> }
 
         <label for="pic">Profile picture</label>
         <input id="pic" type="file" accept="image/*" (change)="onFile($event)" />
@@ -61,7 +62,7 @@
 
         <label class="check"><input type="checkbox" formControlName="newsletter" /> Send me ArtSpace news</label>
 
-        @if (error()) { <p class="error">{{ error() }}</p> }
+        @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
         <button type="submit">Save changes</button>
         <button type="button" class="link-btn" (click)="cancel()">Cancel</button>
       </form>
