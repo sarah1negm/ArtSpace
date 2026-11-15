@@ -4,16 +4,16 @@
   <label for="username">Username</label>
   <input id="username" type="text" formControlName="username" />
   @if (f.username.touched && f.username.invalid) {
-    <p class="error">3+ characters: letters, numbers, underscore only.</p>
+    <p class="error">{{ f.username.hasError('required') ? 'Enter a username.' : 'Use at least 3 characters: letters, numbers or underscores.' }}</p>
   }
 
   <label for="name">Full name</label>
   <input id="name" type="text" formControlName="name" />
-  @if (f.name.touched && f.name.invalid) { <p class="error">Name is required.</p> }
+  @if (f.name.touched && f.name.invalid) { <p class="error">Enter your full name.</p> }
 
   <label for="email">Email</label>
   <input id="email" type="email" formControlName="email" />
-  @if (f.email.touched && f.email.invalid) { <p class="error">Enter a valid email.</p> }
+  @if (f.email.touched && f.email.invalid) { <p class="error">{{ f.email.hasError('required') ? 'Enter your email address.' : 'Enter a valid email address.' }}</p> }
 
   <label for="picture">Profile picture</label>
   <input id="picture" type="file" accept="image/*" (change)="onFile($event)" />
@@ -22,16 +22,17 @@
   <label for="password">Password</label>
   <input id="password" type="password" formControlName="password" />
   @if (f.password.touched && f.password.invalid) {
-    <p class="error">At least 8 characters, with a letter and a number.</p>
+    <p class="error">{{ f.password.hasError('required') ? 'Enter a password.' : 'Use at least 8 characters, including a letter and a number.' }}</p>
   }
 
   <label for="confirm">Confirm password</label>
   <input id="confirm" type="password" formControlName="confirm" />
-  @if (f.confirm.touched && form.hasError('mismatch')) { <p class="error">Passwords don't match.</p> }
+  @if (f.confirm.touched && f.confirm.hasError('required')) { <p class="error">Confirm your password.</p> }
+  @else if (f.confirm.touched && form.hasError('mismatch')) { <p class="error">Passwords don't match.</p> }
 
   <label for="card">Credit card (16 digits)</label>
   <input id="card" type="text" inputmode="numeric" maxlength="16" formControlName="cardNumber" />
-  @if (f.cardNumber.touched && f.cardNumber.invalid) { <p class="error">Enter exactly 16 digits.</p> }
+  @if (f.cardNumber.touched && f.cardNumber.invalid) { <p class="error">{{ f.cardNumber.hasError('required') ? 'Enter a 16-digit card number for this demo.' : 'Enter exactly 16 digits.' }}</p> }
 
   <label class="check"><input type="checkbox" formControlName="newsletter" /> Send me ArtSpace news</label>
 
@@ -41,7 +42,7 @@
     <option value="dark">Dark</option>
   </select>
 
-  @if (serverError()) { <p class="error">{{ serverError() }}</p> }
-  <button type="submit">Sign up</button>
+  @if (serverError()) { <p class="error" role="alert">{{ serverError() }}</p> }
+  <button type="submit" [disabled]="submitting()">{{ submitting() ? 'Creating account...' : 'Sign up' }}</button>
   <p>Already have an account? <a routerLink="/login">Log in</a></p>
 </form>
