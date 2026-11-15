@@ -89,7 +89,7 @@ import { AccountingService } from '../services/accounting.service';
             <button type="submit">{{ kind.add }}</button>
           </form>
         }
-        @if (message()) {
+        @if (message() && !acc.storageError()) {
           <p role="status">{{ message() }}</p>
         }
       </section>

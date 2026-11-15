@@ -7,6 +7,7 @@ import { CartService } from '../cart';
   template: `<button type="button" [class.added]="added()" [disabled]="atLimit()" (click)="add()">
       {{ atLimit() ? 'Quantity limit reached' : added() ? 'Added to Cart' : 'Add to Cart' }}
     </button>
+    @if (error()) { <p role="alert">{{ error() }}</p> }
     <span class="status" role="status">{{
       added() ? artwork().title + ' added to cart.' : ''
     }}</span>`,
@@ -53,6 +54,7 @@ import { CartService } from '../cart';
 export class AddToCart implements OnDestroy {
   readonly artwork = input.required<Artwork>();
   readonly added = signal(false);
+  readonly error = signal('');
   private readonly cart = inject(CartService);
   readonly atLimit = computed(
     () => this.cart.items().filter((item) => item.id === this.artwork().id).length >= 99,
@@ -60,7 +62,13 @@ export class AddToCart implements OnDestroy {
   private timer?: ReturnType<typeof setTimeout>;
   add(): void {
     if (this.atLimit()) return;
-    this.cart.addToCart(this.artwork());
+    clearTimeout(this.timer);
+    this.added.set(false);
+    this.error.set('');
+    if (!this.cart.addToCart(this.artwork())) {
+      this.error.set(this.cart.storageError());
+      return;
+    }
     this.added.set(true);
     clearTimeout(this.timer);
     this.timer = setTimeout(() => this.added.set(false), 1400);

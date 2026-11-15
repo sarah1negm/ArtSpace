@@ -8,6 +8,7 @@ import { StudentService } from '../student.service';
   styleUrl: '../student.scss',
   template: `
     <h1>Invoices</h1>
+    @if (student.storageError()) { <p role="alert">{{ student.storageError() }}</p> }
     @if (uninvoiced().length) {
       <section class="panel">
         <h2>Create an invoice</h2>
@@ -85,6 +86,7 @@ export class Invoices {
   protected readonly uninvoiced = computed(() => this.student.fees().filter((fee) => !fee.invoice));
 
   protected create(feeId: string): void {
-    this.selectedId.set(this.student.createInvoice(feeId));
+    const id = this.student.createInvoice(feeId);
+    if (id) this.selectedId.set(id);
   }
 }

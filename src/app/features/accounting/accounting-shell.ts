@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
+import { AccountingService } from './services/accounting.service';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
 @Component({
@@ -23,8 +24,9 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
           >Department budget</a
         >
       </nav>
+      @if (acc.storageError()) { <p role="alert">{{ acc.storageError() }}</p> }
       <router-outlet />
     </main>
   `,
 })
-export class AccountingShell {}
+export class AccountingShell { readonly acc = inject(AccountingService); }

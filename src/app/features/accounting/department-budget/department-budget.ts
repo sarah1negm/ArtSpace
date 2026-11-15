@@ -87,7 +87,7 @@ import { AccountingService, monthLabel } from '../services/accounting.service';
         <label>Amount (EGP) <input #amount type="number" min="1" step="50" required /></label>
         <button type="submit">Add entry</button>
       </form>
-      @if (message()) {
+      @if (message() && !acc.storageError()) {
         <p role="status">{{ message() }}</p>
       }
       <div class="scroll">

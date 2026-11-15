@@ -14,7 +14,7 @@ describe('AccountingService', () => {
           provide: StorageService,
           useValue: {
             getLocal: (_k: string, fallback: unknown) => fallback,
-            setLocal: (k: string, v: unknown) => (saved[k] = v),
+            setLocal: (k: string, v: unknown) => { saved[k] = v; return true; },
           },
         },
       ],

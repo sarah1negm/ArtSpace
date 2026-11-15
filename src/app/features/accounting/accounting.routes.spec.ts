@@ -30,7 +30,7 @@ describe('Accounting portal routes', () => {
         },
         {
           provide: StorageService,
-          useValue: { getLocal: (_k: string, fallback: unknown) => fallback, setLocal: () => {} },
+          useValue: { getLocal: (_k: string, fallback: unknown) => fallback, setLocal: () => true },
         },
       ],
     });

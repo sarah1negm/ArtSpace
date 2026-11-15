@@ -6,6 +6,7 @@ import { ArtworkDraft, StudentRecords } from './student.models';
 
 @Injectable({ providedIn: 'root' })
 export class StudentService {
+  readonly storageError = signal('');
   private readonly auth = inject(AuthService);
   private readonly storage = inject(StorageService);
   private readonly student = computed(() => {
@@ -76,21 +77,22 @@ export class StudentService {
   readonly earnings = this.sales.reduce((sum, sale) => sum + sale.earnings, 0);
 
   createInvoice(feeId: string): string | null {
+    this.storageError.set('');
     if (!this.key() || !FEES.some((fee) => fee.id === feeId)) return null;
     const records = this.records();
     const existing = records.invoices.find((invoice) => invoice.feeId === feeId);
     if (existing) return existing.id;
     const id = `INV-${feeId.toUpperCase()}`;
-    this.save({
+    return this.save({
       ...records,
       invoices: [...records.invoices, { id, feeId, issuedOn: this.today(), paidOn: null }],
-    });
-    return id;
+    }) ? id : null;
   }
 
-  payInvoice(id: string): void {
+  payInvoice(id: string): boolean {
+    this.storageError.set('');
     const records = this.records();
-    this.save({
+    return this.save({
       ...records,
       invoices: records.invoices.map((invoice) =>
         invoice.id === id && !invoice.paidOn ? { ...invoice, paidOn: this.today() } : invoice,
@@ -99,6 +101,7 @@ export class StudentService {
   }
 
   saveArtwork(draft: ArtworkDraft, id?: string): boolean {
+    this.storageError.set('');
     const title = draft.title.trim();
     const description = draft.description.trim();
     const imageUrl = draft.imageUrl.trim();
@@ -129,25 +132,30 @@ export class StudentService {
       price,
       imageUrl,
     };
-    this.save({
+    return this.save({
       ...records,
       artworks: id
         ? records.artworks.map((item) => (item.id === id ? artwork : item))
         : [...records.artworks, artwork],
     });
-    return true;
   }
 
-  removeArtwork(id: string): void {
+  removeArtwork(id: string): boolean {
+    this.storageError.set('');
     const records = this.records();
-    this.save({ ...records, artworks: records.artworks.filter((artwork) => artwork.id !== id) });
+    return this.save({ ...records, artworks: records.artworks.filter((artwork) => artwork.id !== id) });
   }
 
-  private save(records: StudentRecords): void {
+  private save(records: StudentRecords): boolean {
+    this.storageError.set('');
     const key = this.key();
-    if (!key) return;
-    this.storage.setLocal(key, records);
+    if (!key) return false;
+    if (!this.storage.setLocal(key, records)) {
+      this.storageError.set('Your changes could not be saved. Browser storage may be full or blocked. Your previous data has been kept. Please free storage or allow site storage, then try again.');
+      return false;
+    }
     this.saved.set({ key, records });
+    return true;
   }
 
   private storageKey(id: string): string {

@@ -33,12 +33,13 @@ describe('CartService', () => {
     localStorage.setItem('artspace-cart', '{}');
     expect(TestBed.inject(CartService).total()).toBe(0);
   });
-  it('keeps working when storage access fails', () => {
+  it('reports failure and keeps the cart unchanged when storage access fails', () => {
     spyOn(Storage.prototype, 'getItem').and.throwError('blocked');
     spyOn(Storage.prototype, 'setItem').and.throwError('blocked');
     const service = TestBed.inject(CartService);
-    service.addToCart(ARTWORKS[1]);
-    expect(service.total()).toBe(200);
+    expect(service.addToCart(ARTWORKS[1])).toBeFalse();
+    expect(service.total()).toBe(0);
+    expect(service.storageError()).toContain('could not be saved');
     service.removeFromCart(0);
     expect(service.total()).toBe(0);
   });

@@ -62,7 +62,7 @@ import { AccountingService } from '../services/accounting.service';
         <button type="button" [disabled]="acc.pendingPayouts() === 0" (click)="payAll()">
           Process all pending payouts
         </button>
-        @if (message()) {
+        @if (message() && !acc.storageError()) {
           <span role="status">{{ message() }}</span>
         }
       </p>
