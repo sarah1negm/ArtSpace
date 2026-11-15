@@ -37,7 +37,7 @@ describe('Student portal routes', () => {
         },
         {
           provide: StorageService,
-          useValue: { getLocal: (_key: string, fallback: unknown) => fallback, setLocal: () => {} },
+          useValue: { getLocal: (_key: string, fallback: unknown) => fallback, setLocal: () => true },
         },
       ],
     });

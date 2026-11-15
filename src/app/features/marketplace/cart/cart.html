@@ -3,6 +3,7 @@
     <h1>Your Shopping Cart</h1>
     <a routerLink="/gallery">Continue exploring</a>
   </header>
+  @if (cartService.storageError()) { <p role="alert">{{ cartService.storageError() }}</p> }
   @if (receipt(); as order) {
     <section class="empty" role="status">
       <h2>Demo checkout complete</h2>

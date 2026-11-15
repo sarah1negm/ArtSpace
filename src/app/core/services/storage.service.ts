@@ -2,13 +2,15 @@ import { Injectable } from '@angular/core';
 
 @Injectable({ providedIn: 'root' })
 export class StorageService {
+  /** False means nothing was saved; callers must not commit their in-memory change. */
   // localStorage: data that must survive closing the browser (cart, listings, invoices)
   getLocal<T>(key: string, fallback: T): T {
     try { const v = localStorage.getItem(key); return v ? (JSON.parse(v) as T) : fallback; }
     catch { return fallback; }
   }
-  setLocal(key: string, value: unknown) {
-    try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* storage full or blocked */ }
+  setLocal(key: string, value: unknown): boolean {
+    try { localStorage.setItem(key, JSON.stringify(value)); return true; }
+    catch { return false; }
   }
 
   // sessionStorage: temporary data tied to this tab (checkout in progress, filters, form drafts)
@@ -16,8 +18,9 @@ export class StorageService {
     try { const v = sessionStorage.getItem(key); return v ? (JSON.parse(v) as T) : fallback; }
     catch { return fallback; }
   }
-  setSession(key: string, value: unknown) {
-    try { sessionStorage.setItem(key, JSON.stringify(value)); } catch { /* ignore */ }
+  setSession(key: string, value: unknown): boolean {
+    try { sessionStorage.setItem(key, JSON.stringify(value)); return true; }
+    catch { return false; }
   }
   removeSession(key: string) { sessionStorage.removeItem(key); }
 

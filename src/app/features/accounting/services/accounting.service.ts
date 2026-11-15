@@ -22,6 +22,7 @@ export const monthLabel = (month: string): string => {
 
 @Injectable({ providedIn: 'root' })
 export class AccountingService {
+  readonly storageError = signal('');
   private readonly storage = inject(StorageService);
   private readonly state = signal<AccountingState>(this.storage.getLocal(STORAGE_KEY, initialState()));
 
@@ -119,27 +120,27 @@ export class AccountingService {
 
   // ---------------- payroll actions ----------------
   setBaseSalary(staffId: string, amount: number): boolean {
+    this.storageError.set('');
     if (!Number.isFinite(amount) || amount < 0) return false;
-    this.update((s) => ({
+    return this.update((s) => ({
       ...s,
       staff: s.staff.map((m) => (m.id === staffId ? { ...m, baseSalary: round2(amount) } : m)),
     }));
-    return true;
   }
 
   addAdjustment(staffId: string, kind: 'allowances' | 'deductions', label: string, amount: number): boolean {
+    this.storageError.set('');
     const clean = label.trim();
     if (!clean || !Number.isFinite(amount) || amount <= 0) return false;
     const adj: Adjustment = { id: crypto.randomUUID(), label: clean, amount: round2(amount) };
-    this.update((s) => ({
+    return this.update((s) => ({
       ...s,
       staff: s.staff.map((m) => (m.id === staffId ? { ...m, [kind]: [...m[kind], adj] } : m)),
     }));
-    return true;
   }
 
-  removeAdjustment(staffId: string, kind: 'allowances' | 'deductions', adjId: string): void {
-    this.update((s) => ({
+  removeAdjustment(staffId: string, kind: 'allowances' | 'deductions', adjId: string): boolean {
+    return this.update((s) => ({
       ...s,
       staff: s.staff.map((m) =>
         m.id === staffId ? { ...m, [kind]: m[kind].filter((a) => a.id !== adjId) } : m,
@@ -165,10 +166,10 @@ export class AccountingService {
 
   // ---------------- payout actions (simulated) ----------------
   processPayout(saleId: string): boolean {
+    this.storageError.set('');
     if (!SELLER_SALES.some((s) => s.id === saleId) || this.state().paid[saleId]) return false;
     const today = this.today();
-    this.update((s) => ({ ...s, paid: { ...s.paid, [saleId]: today } }));
-    return true;
+    return this.update((s) => ({ ...s, paid: { ...s.paid, [saleId]: today } }));
   }
 
   processStudentPayouts(studentName: string): number {
@@ -181,38 +182,43 @@ export class AccountingService {
 
   // ---------------- department budget actions ----------------
   addLedgerEntry(entry: Omit<LedgerEntry, 'id'>): boolean {
+    this.storageError.set('');
     const label = entry.label.trim();
     if (!label || !Number.isFinite(entry.amount) || entry.amount <= 0 || !this.months.includes(entry.month)) {
       return false;
     }
-    this.update((s) => ({
+    return this.update((s) => ({
       ...s,
       ledger: [...s.ledger, { ...entry, label, amount: round2(entry.amount), id: crypto.randomUUID() }],
     }));
-    return true;
   }
 
-  removeLedgerEntry(id: string): void {
-    this.update((s) => ({ ...s, ledger: s.ledger.filter((e) => e.id !== id) }));
+  removeLedgerEntry(id: string): boolean {
+    return this.update((s) => ({ ...s, ledger: s.ledger.filter((e) => e.id !== id) }));
   }
 
   /** Restore the demo data (handy before a presentation). */
-  reset(): void {
-    this.update(() => initialState());
+  reset(): boolean {
+    return this.update(() => initialState());
   }
 
   // ---------------- internals ----------------
   private processMany(rows: { id: string }[]): number {
+    this.storageError.set('');
     if (!rows.length) return 0;
     const today = this.today();
-    this.update((s) => ({ ...s, paid: { ...s.paid, ...Object.fromEntries(rows.map((r) => [r.id, today])) } }));
-    return rows.length;
+    return this.update((s) => ({ ...s, paid: { ...s.paid, ...Object.fromEntries(rows.map((r) => [r.id, today])) } })) ? rows.length : 0;
   }
 
-  private update(fn: (s: AccountingState) => AccountingState): void {
+  private update(fn: (s: AccountingState) => AccountingState): boolean {
+    this.storageError.set('');
     const next = fn(this.state());
-    this.storage.setLocal(STORAGE_KEY, next);
+    if (!this.storage.setLocal(STORAGE_KEY, next)) {
+      this.storageError.set('Your changes could not be saved. Browser storage may be full or blocked. No payroll, payout or budget data was changed. Please free storage or allow site storage, then try again.');
+      return false;
+    }
     this.state.set(next);
+    return true;
   }
 
   private today(): string {

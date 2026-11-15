@@ -15,11 +15,12 @@ export class Cart {
   readonly confirming = signal(false);
   checkout(): void {
     if (!this.cartService.items().length) return;
-    this.receipt.set({
+    const receipt = {
       total: this.cartService.total(),
       quantity: this.cartService.items().length,
-    });
-    this.cartService.clear();
+    };
+    if (!this.cartService.clear()) return;
+    this.receipt.set(receipt);
     this.confirming.set(false);
   }
 }

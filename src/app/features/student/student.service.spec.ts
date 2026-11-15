@@ -40,7 +40,7 @@ describe('StudentService', () => {
           provide: StorageService,
           useValue: {
             getLocal: (key: string, fallback: unknown) => storage.get(key) ?? fallback,
-            setLocal: (key: string, value: unknown) => storage.set(key, structuredClone(value)),
+            setLocal: (key: string, value: unknown) => { storage.set(key, structuredClone(value)); return true; },
           },
         },
       ],

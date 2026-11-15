@@ -155,13 +155,13 @@ export class ArtworkManagement {
     const draft = this.form.getRawValue();
     const imageUrl = draft.imageUrl.trim() || this.selectedImage;
     this.message.set('');
-    if (
-      this.form.invalid ||
-      !this.student.saveArtwork({ ...draft, imageUrl }, editingId ?? undefined)
-    ) {
-      this.error.set(
-        'Enter a title, description, positive price, and an image file or HTTP(S) URL.',
-      );
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      this.error.set('Enter a title, description, positive price, and an image file or HTTP(S) URL.');
+      return;
+    }
+    if (!this.student.saveArtwork({ ...draft, imageUrl }, editingId ?? undefined)) {
+      this.error.set(this.student.storageError() || 'Enter a title, description, positive price, and an image file or HTTP(S) URL.');
       return;
     }
     this.reset();
@@ -198,7 +198,12 @@ export class ArtworkManagement {
   }
 
   protected remove(artwork: Artwork): void {
-    this.student.removeArtwork(artwork.id);
+    this.message.set('');
+    if (!this.student.removeArtwork(artwork.id)) {
+      this.error.set(this.student.storageError());
+      return;
+    }
+    this.error.set('');
     if (this.editingId() === artwork.id) this.reset();
     this.removingId.set(null);
     this.message.set('Listing removed.');
