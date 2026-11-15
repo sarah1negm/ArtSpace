@@ -11,6 +11,11 @@
 dl { display: grid; grid-template-columns: 110px 1fr; gap: .5rem 1rem; }
 dt { font-weight: 600; }
 dd { margin: 0; }
-.ok { color: #1e8449; font-weight: 600; }
-.primary-btn { padding: .6rem 1.2rem; border: 0; border-radius: 6px; background: #e8a33d; font-weight: 700; cursor: pointer; }
-.link-btn { background: none !important; width: auto !important; text-decoration: underline; margin-top: .5rem; cursor: pointer; border: 0; }
+.ok { color: var(--auth-success); font-weight: 600; }
+.primary-btn { padding: .6rem 1.2rem; border: 0; border-radius: 6px; background: var(--auth-button-bg); color: var(--auth-button-text); font-weight: 700; cursor: pointer; }
+.link-btn { color: var(--auth-link); background: none !important; width: auto !important; text-decoration: underline; margin-top: .5rem; cursor: pointer; border: 0; }
+.primary-btn:disabled {
+  background: var(--auth-disabled-bg); color: var(--auth-disabled-text);
+  border: 1px solid var(--auth-border); cursor: not-allowed;
+}
+.link-btn:disabled { color: var(--auth-disabled-text); cursor: not-allowed; }
