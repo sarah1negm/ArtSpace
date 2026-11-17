@@ -69,8 +69,18 @@ export class StorageService {
       return '';
     }
   }
-  setCookie(name: string, value: string, days = 7) {
-    document.cookie = `${name}=${encodeURIComponent(value)}; max-age=${days * 86400}; path=/; SameSite=Strict`;
+  setCookie(name: string, value: string, days = 7): boolean {
+    try {
+      const encoded = encodeURIComponent(value);
+      document.cookie = `${name}=${encoded}; max-age=${days * 86400}; path=/; SameSite=Strict`;
+      // Browsers may silently ignore writes when cookies are blocked.
+      return document.cookie.split(';').some(cookie => cookie.trim() === `${name}=${encoded}`);
+    } catch { return false; }
   }
-  deleteCookie(name: string) { document.cookie = `${name}=; max-age=0; path=/`; }
+  deleteCookie(name: string): boolean {
+    try {
+      document.cookie = `${name}=; max-age=0; path=/`;
+      return !document.cookie.split(';').some(cookie => cookie.trim().startsWith(name + '='));
+    } catch { return false; }
+  }
 }

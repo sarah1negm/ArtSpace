@@ -23,6 +23,7 @@ export class App {
       const theme = user?.preferences.theme ?? (storage.getCookie('artspace_theme') || 'light');
       document.documentElement.setAttribute('data-theme', theme);
       if (user && storage.getCookie('artspace_consent') === 'accepted') {
+        // This optional cookie may fail; the applied theme still follows saved account preferences.
         storage.setCookie('artspace_theme', user.preferences.theme, 30);
       }
     });
