@@ -75,3 +75,53 @@ describe('StorageService cookie reads', () => {
     expect(TestBed.inject(StorageService).getCookie('artspace_theme')).toBe('');
   });
 });
+
+describe('StorageService cookie write results', () => {
+  afterEach(() => {
+    document.cookie = 'cookie-write-test=; max-age=0; path=/';
+    document.cookie = 'cookie-unrelated=; max-age=0; path=/';
+  });
+
+  it('confirms encoded writes and deletion without changing unrelated cookies', () => {
+    const storage = TestBed.inject(StorageService);
+    document.cookie = 'cookie-unrelated=keep; path=/';
+    expect(storage.setCookie('cookie-write-test', 'Ada = 100%')).toBeTrue();
+    expect(storage.getCookie('cookie-write-test')).toBe('Ada = 100%');
+    expect(storage.deleteCookie('cookie-write-test')).toBeTrue();
+    expect(storage.getCookie('cookie-write-test')).toBe('');
+    expect(storage.getCookie('cookie-unrelated')).toBe('keep');
+  });
+
+  for (const operation of ['setCookie', 'deleteCookie'] as const) {
+    it(`returns false when ${operation} throws and permits retry`, () => {
+      const storage = TestBed.inject(StorageService);
+      document.cookie = 'cookie-write-test=previous; path=/';
+      const write = spyOnProperty(document, 'cookie', 'set')
+        .and.throwError(new DOMException('Blocked', 'SecurityError'));
+      const attempt = () => operation === 'setCookie'
+        ? storage.setCookie('cookie-write-test', 'next') : storage.deleteCookie('cookie-write-test');
+      expect(attempt()).toBeFalse();
+      expect(storage.getCookie('cookie-write-test')).toBe('previous');
+      write.and.callThrough();
+      expect(attempt()).toBeTrue();
+      expect(storage.getCookie('cookie-write-test')).toBe(operation === 'setCookie' ? 'next' : '');
+    });
+
+    it(`detects silently ignored ${operation} operations`, () => {
+      document.cookie = 'cookie-write-test=previous; path=/';
+      spyOnProperty(document, 'cookie', 'set').and.stub();
+      const storage = TestBed.inject(StorageService);
+      expect(operation === 'setCookie'
+        ? storage.setCookie('cookie-write-test', 'next') : storage.deleteCookie('cookie-write-test')).toBeFalse();
+      expect(storage.getCookie('cookie-write-test')).toBe('previous');
+    });
+  }
+
+  it('does not report success when read-back verification is blocked', () => {
+    spyOnProperty(document, 'cookie', 'set').and.stub();
+    spyOnProperty(document, 'cookie', 'get').and.throwError(new DOMException('Blocked', 'SecurityError'));
+    const storage = TestBed.inject(StorageService);
+    expect(storage.setCookie('cookie-write-test', '')).toBeFalse();
+    expect(storage.deleteCookie('cookie-write-test')).toBeFalse();
+  });
+});

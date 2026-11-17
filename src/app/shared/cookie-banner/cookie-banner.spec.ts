@@ -34,6 +34,30 @@ describe('CookieBanner', () => {
   });
 
   for (const choice of ['accepted', 'declined'] as const) {
+    for (const failure of ['throws', 'silently ignores']) {
+      it(`retains the banner and accurate feedback when the browser ${failure} ${choice}, then allows retry`, () => {
+        const fixture = TestBed.createComponent(CookieBanner);
+        fixture.detectChanges();
+        const write = spyOnProperty(document, 'cookie', 'set');
+        if (failure === 'throws') write.and.throwError(new DOMException('Blocked', 'SecurityError'));
+        else write.and.stub();
+        const button = fixture.nativeElement.querySelector(choice === 'accepted' ? '.yes' : 'button:not(.yes)') as HTMLButtonElement;
+        expect(button).not.toBeNull();
+        button.click();
+        fixture.detectChanges();
+        expect(fixture.componentInstance.visible()).toBeTrue();
+        expect(fixture.nativeElement.querySelector('[role="alert"]').textContent).toContain('could not be saved');
+        expect(TestBed.inject(StorageService).getCookie('artspace_consent')).toBe('');
+        write.and.callThrough();
+        button.click();
+        fixture.detectChanges();
+        expect(fixture.componentInstance.visible()).toBeFalse();
+        expect(fixture.componentInstance.error()).toBe('');
+        expect(TestBed.inject(StorageService).getCookie('artspace_consent')).toBe(choice);
+        expect(fixture.nativeElement.querySelector('[role="alert"]')).toBeNull();
+      });
+    }
+
     it(`recognizes encoded ${choice} consent`, () => {
       document.cookie = `artspace_consent=${choice === 'accepted' ? '%61ccepted' : '%64eclined'}; path=/`;
       expect(TestBed.createComponent(CookieBanner).componentInstance.visible()).toBeFalse();

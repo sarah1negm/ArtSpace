@@ -29,6 +29,21 @@ describe('Authentication storage reliability', () => {
     sessionStorage.clear();
     document.cookie = 'artspace_remember=;max-age=0;path=/';
   });
+  for (const remember of [true, false]) {
+    it(`keeps login and authorization correct when optional cookie ${remember ? 'saving' : 'deletion'} is blocked`, async () => {
+      const previous = auth.getRememberedUsername();
+      const write = spyOnProperty(document, 'cookie', 'set')
+        .and.throwError(new DOMException('Blocked', 'SecurityError'));
+      expect((await auth.login('accountant1', 'Pass1234', remember)).ok).toBeTrue();
+      expect(write).toHaveBeenCalled();
+      expect(auth.role()).toBe('accountant');
+      expect(sessionStorage.getItem('artspace_session')).toBe(auth.currentUser()!.id);
+      expect(auth.getRememberedUsername()).toBe(previous);
+      write.and.callThrough();
+      expect((await auth.login('accountant1', 'Pass1234', remember)).ok).toBeTrue();
+      expect(auth.getRememberedUsername()).toBe(remember ? 'accountant1' : '');
+    });
+  }
   for (const name of ['QuotaExceededError', 'SecurityError']) {
     it(`preserves accounts and signed-in state on failed signup/profile writes and supports retry (${name})`, async () => {
       const users = localStorage.getItem('artspace_users'),
