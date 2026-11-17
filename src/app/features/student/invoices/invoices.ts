@@ -8,6 +8,10 @@ import { StudentService } from '../student.service';
   styleUrl: '../student.scss',
   template: `
     <h1>Invoices</h1>
+    @if (!student.recordsAvailable()) {
+      <p role="alert">Student records are unavailable. {{ student.storageError() }}</p>
+      <button type="button" (click)="student.retryLoad()">Retry loading student records</button>
+    } @else {
     @if (student.storageError()) { <p role="alert">{{ student.storageError() }}</p> }
     @if (uninvoiced().length) {
       <section class="panel">
@@ -74,6 +78,7 @@ import { StudentService } from '../student.service';
           <button type="button" (click)="student.payInvoice(invoice.id)">Simulate payment</button>
         }
       </section>
+    }
     }
   `,
 })

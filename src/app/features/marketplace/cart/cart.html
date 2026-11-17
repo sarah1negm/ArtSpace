@@ -4,6 +4,12 @@
     <a routerLink="/gallery">Continue exploring</a>
   </header>
   @if (cartService.storageError()) { <p role="alert">{{ cartService.storageError() }}</p> }
+  @if (cartService.storageError()) {
+    <button type="button" class="button secondary" (click)="cartService.retryLoad()">Retry loading cart</button>
+  }
+  @if (cartService.readError()) {
+    <p>Your cart is unavailable until its saved data can be loaded.</p>
+  } @else {
   @if (receipt(); as order) {
     <section class="empty" role="status">
       <h2>Demo checkout complete</h2>
@@ -85,10 +91,11 @@
       </button>
     }
   } @else {
-    <div class="empty">
-      <h2>Your cart is empty</h2>
-      <p>Find something you love in our student gallery.</p>
-      <a class="button" routerLink="/gallery">Browse artworks</a>
-    </div>
+      <div class="empty">
+        <h2>Your cart is empty</h2>
+        <p>Find something you love in our student gallery.</p>
+        <a class="button" routerLink="/gallery">Browse artworks</a>
+      </div>
+  }
   }
 </section>

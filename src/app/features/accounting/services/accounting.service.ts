@@ -1,4 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
+import { loadError } from '../../../core/services/storage-validation';
+import { isAccountingState } from '../accounting.validation';
 import { StorageService } from '../../../core/services/storage.service';
 import { COMMISSION_RATE, MONTHLY_BASE, SELLER_SALES, STORAGE_KEY, initialState } from '../accounting.mock';
 import {
@@ -22,9 +24,24 @@ export const monthLabel = (month: string): string => {
 
 @Injectable({ providedIn: 'root' })
 export class AccountingService {
-  readonly storageError = signal('');
+  private readonly writeError = signal('');
   private readonly storage = inject(StorageService);
-  private readonly state = signal<AccountingState>(this.storage.getLocal(STORAGE_KEY, initialState()));
+  private readonly loaded = signal(this.storage.loadLocal(STORAGE_KEY, isAccountingState));
+  readonly loadStatus = computed(() => this.loaded().status);
+  readonly recordsAvailable = computed(() => ['loaded', 'missing'].includes(this.loadStatus()));
+  private readonly revision = signal(0);
+  readonly dataRevision = this.revision.asReadonly();
+  readonly storageError = computed(() => loadError(this.loadStatus(), 'accounting records') || this.writeError());
+  private readonly state = computed<AccountingState>(() => {
+    const result = this.loaded();
+    return result.status === 'loaded' ? result.value : result.status === 'missing'
+      ? initialState() : { staff: [], ledger: [], paid: {} };
+  });
+  retryLoad(): void {
+    this.writeError.set('');
+    this.loaded.set(this.storage.loadLocal(STORAGE_KEY, isAccountingState));
+    this.revision.update(value => value + 1);
+  }
 
   readonly months = MONTHLY_BASE.map((m) => m.month);
   readonly commissionRate = COMMISSION_RATE;
@@ -120,7 +137,7 @@ export class AccountingService {
 
   // ---------------- payroll actions ----------------
   setBaseSalary(staffId: string, amount: number): boolean {
-    this.storageError.set('');
+    this.writeError.set('');
     if (!Number.isFinite(amount) || amount < 0) return false;
     return this.update((s) => ({
       ...s,
@@ -129,7 +146,7 @@ export class AccountingService {
   }
 
   addAdjustment(staffId: string, kind: 'allowances' | 'deductions', label: string, amount: number): boolean {
-    this.storageError.set('');
+    this.writeError.set('');
     const clean = label.trim();
     if (!clean || !Number.isFinite(amount) || amount <= 0) return false;
     const adj: Adjustment = { id: crypto.randomUUID(), label: clean, amount: round2(amount) };
@@ -148,7 +165,8 @@ export class AccountingService {
     }));
   }
 
-  generateReport(month: string): PayrollReport {
+  generateReport(month: string): PayrollReport | null {
+    if (!this.recordsAvailable()) return null;
     const employees = this.payroll();
     const t = (k: 'baseSalary' | 'totalAllowances' | 'totalDeductions' | 'netSalary') =>
       round2(employees.reduce((a, e) => a + e[k], 0));
@@ -166,7 +184,7 @@ export class AccountingService {
 
   // ---------------- payout actions (simulated) ----------------
   processPayout(saleId: string): boolean {
-    this.storageError.set('');
+    this.writeError.set('');
     if (!SELLER_SALES.some((s) => s.id === saleId) || this.state().paid[saleId]) return false;
     const today = this.today();
     return this.update((s) => ({ ...s, paid: { ...s.paid, [saleId]: today } }));
@@ -182,7 +200,7 @@ export class AccountingService {
 
   // ---------------- department budget actions ----------------
   addLedgerEntry(entry: Omit<LedgerEntry, 'id'>): boolean {
-    this.storageError.set('');
+    this.writeError.set('');
     const label = entry.label.trim();
     if (!label || !Number.isFinite(entry.amount) || entry.amount <= 0 || !this.months.includes(entry.month)) {
       return false;
@@ -204,20 +222,22 @@ export class AccountingService {
 
   // ---------------- internals ----------------
   private processMany(rows: { id: string }[]): number {
-    this.storageError.set('');
+    this.writeError.set('');
     if (!rows.length) return 0;
     const today = this.today();
     return this.update((s) => ({ ...s, paid: { ...s.paid, ...Object.fromEntries(rows.map((r) => [r.id, today])) } })) ? rows.length : 0;
   }
 
   private update(fn: (s: AccountingState) => AccountingState): boolean {
-    this.storageError.set('');
+    this.writeError.set('');
+    if (!['loaded', 'missing'].includes(this.loadStatus())) return false;
     const next = fn(this.state());
     if (!this.storage.setLocal(STORAGE_KEY, next)) {
-      this.storageError.set('Your changes could not be saved. Browser storage may be full or blocked. No payroll, payout or budget data was changed. Please free storage or allow site storage, then try again.');
+      this.writeError.set('Your changes could not be saved. Browser storage may be full or blocked. No payroll, payout or budget data was changed. Please free storage or allow site storage, then try again.');
       return false;
     }
-    this.state.set(next);
+    this.loaded.set({ status: 'loaded', value: next });
+    this.revision.update(value => value + 1);
     return true;
   }
 

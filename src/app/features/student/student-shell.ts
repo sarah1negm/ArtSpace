@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
+import { StudentService } from './student.service';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
 @Component({
@@ -20,8 +21,12 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
         <a routerLink="artwork" routerLinkActive="active" ariaCurrentWhenActive="page">Artwork</a>
         <a routerLink="sales" routerLinkActive="active" ariaCurrentWhenActive="page">Sales</a>
       </nav>
+      @if (student.loadStatus() === 'unreadable' || student.loadStatus() === 'invalid') {
+        <p role="alert">{{ student.storageError() }}</p>
+        <button type="button" (click)="student.retryLoad()">Retry loading student records</button>
+      }
       <router-outlet />
     </main>
   `,
 })
-export class StudentShell {}
+export class StudentShell { readonly student = inject(StudentService); }

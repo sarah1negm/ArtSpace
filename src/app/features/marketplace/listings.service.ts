@@ -5,6 +5,8 @@ import { ARTWORKS, Artwork } from './artworks';
 @Injectable({ providedIn: 'root' })
 export class ListingsService {
   private readonly students = inject(StudentService);
+  readonly storageError = this.students.listingsError;
+  retryLoad(): void { this.students.retryLoad(); }
   readonly studentListings = computed(() =>
     this.students.publicListings().map((item): Artwork => ({
       id: item.id,

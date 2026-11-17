@@ -13,7 +13,8 @@ import { StudentService } from '../../features/student/student.service';
 export class Profile implements OnDestroy {
   private savedTimer?: ReturnType<typeof setTimeout>;
   auth = inject(AuthService);
-  readonly listings = inject(StudentService).artworks;
+  readonly student = inject(StudentService);
+  readonly listings = this.student.artworks;
   private fb = inject(FormBuilder);
 
   editing = signal(false);

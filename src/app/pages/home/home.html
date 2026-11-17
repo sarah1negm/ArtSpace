@@ -26,6 +26,10 @@
 
 <section class="previews">
   <h2>Featured artwork</h2>
+  @if (listings.storageError()) {
+    <p role="alert">{{ listings.storageError() }}</p>
+    <button type="button" (click)="listings.retryLoad()">Retry loading artworks</button>
+  }
   @defer (on viewport) {
     <div class="grid">
       @for (a of studentListings(); track a.id) {

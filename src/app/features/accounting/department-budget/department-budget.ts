@@ -9,6 +9,10 @@ import { AccountingService, monthLabel } from '../services/accounting.service';
   styleUrl: '../accounting.scss',
   template: `
     <h1>Department budget</h1>
+    @if (!acc.recordsAvailable()) {
+      <p role="alert">Accounting records are unavailable. {{ acc.storageError() }}</p>
+      <button type="button" (click)="acc.retryLoad()">Retry loading accounting records</button>
+    } @else {
     <p>Gallery department: marketplace commission plus other income, minus running costs.</p>
 
     <div class="grid">
@@ -115,6 +119,7 @@ import { AccountingService, monthLabel } from '../services/accounting.service';
         </table>
       </div>
     </section>
+    }
   `,
 })
 export class DepartmentBudget {

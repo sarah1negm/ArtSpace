@@ -39,7 +39,7 @@ describe('CartService', () => {
     const service = TestBed.inject(CartService);
     expect(service.addToCart(ARTWORKS[1])).toBeFalse();
     expect(service.total()).toBe(0);
-    expect(service.storageError()).toContain('could not be saved');
+    expect(service.storageError()).toContain('could not be loaded');
     service.removeFromCart(0);
     expect(service.total()).toBe(0);
   });

@@ -13,7 +13,7 @@ describe('AccountingService', () => {
         {
           provide: StorageService,
           useValue: {
-            getLocal: (_k: string, fallback: unknown) => fallback,
+            loadLocal: () => ({ status: 'missing' }),
             setLocal: (k: string, v: unknown) => { saved[k] = v; return true; },
           },
         },
@@ -47,7 +47,7 @@ describe('AccountingService', () => {
   });
 
   it('generates a JSON salary report whose totals match the staff rows', () => {
-    const report = service.generateReport('2026-11');
+    const report = service.generateReport('2026-11')!;
     expect(report.month).toBe('2026-11');
     expect(report.employees.length).toBe(6);
     expect(report.totals.netSalary).toBe(service.totalPayroll());

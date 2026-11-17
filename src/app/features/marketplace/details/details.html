@@ -1,4 +1,8 @@
 <section class="marketplace">
+  @if (listings.storageError()) {
+    <p role="alert">{{ listings.storageError() }}</p>
+    <button type="button" class="button secondary" (click)="listings.retryLoad()">Retry loading artworks</button>
+  }
   <header class="page-header">
     <a routerLink="/gallery">Back to gallery</a><a routerLink="/gallery/cart">View cart</a>
   </header>
@@ -14,6 +18,9 @@
         <app-add-to-cart [artwork]="item" />
       </div>
     </article>
+  } @else if (listings.storageError()) {
+    <h1>Artwork temporarily unavailable</h1>
+    <p>Its saved details could not be loaded. Retry loading artworks to view it.</p>
   } @else {
     <h1>Artwork not found</h1>
     <p>This artwork is not in our collection. Browse the gallery to discover available artworks.</p>

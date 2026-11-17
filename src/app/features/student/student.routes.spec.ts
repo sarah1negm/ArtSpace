@@ -37,7 +37,7 @@ describe('Student portal routes', () => {
         },
         {
           provide: StorageService,
-          useValue: { getLocal: (_key: string, fallback: unknown) => fallback, setLocal: () => true, setSessionString: () => true },
+          useValue: { loadLocal: () => ({ status: 'missing' }), setLocal: () => true, setSessionString: () => true },
         },
       ],
     });

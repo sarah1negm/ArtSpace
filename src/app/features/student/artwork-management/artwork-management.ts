@@ -10,6 +10,10 @@ import { StudentService } from '../student.service';
   styleUrl: '../student.scss',
   template: `
     <h1>Artwork listings</h1>
+    @if (!student.recordsAvailable()) {
+      <p role="alert">Student records are unavailable. {{ student.storageError() }}</p>
+      <button type="button" (click)="student.retryLoad()">Retry loading student records</button>
+    } @else {
     <section class="panel">
       <h2>{{ editingId() ? 'Edit listing' : 'Add a listing' }}</h2>
       <form [formGroup]="form" (ngSubmit)="submit()">
@@ -94,6 +98,7 @@ import { StudentService } from '../student.service';
         <p>No artwork listings yet.</p>
       }
     </div>
+    }
   `,
 })
 export class ArtworkManagement {
