@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, linkedSignal, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 
@@ -12,7 +12,10 @@ export class Navbar {
   auth = inject(AuthService);
   private router = inject(Router);
   menuOpen = signal(false);
-  readonly logoutError = signal('');
+  readonly logoutError = linkedSignal({
+    source: () => this.auth.currentUser(),
+    computation: () => '',
+  });
 
   toggle() { this.menuOpen.update(v => !v); }
   logout() {

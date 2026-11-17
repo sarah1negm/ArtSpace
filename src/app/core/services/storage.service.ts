@@ -59,8 +59,15 @@ export class StorageService {
 
   // cookies: tiny preferences with an expiry (remember-me, theme, cookie consent)
   getCookie(name: string): string {
-    const hit = document.cookie.split('; ').find(c => c.startsWith(name + '='));
-    return hit ? decodeURIComponent(hit.split('=')[1]) : '';
+    try {
+      const prefix = name + '=';
+      const hit = document.cookie.split(';').map(cookie => cookie.trim())
+        .find(cookie => cookie.startsWith(prefix));
+      return hit ? decodeURIComponent(hit.slice(prefix.length)) : '';
+    } catch {
+      // Treat malformed or inaccessible cookies as absent; never rewrite them here.
+      return '';
+    }
   }
   setCookie(name: string, value: string, days = 7) {
     document.cookie = `${name}=${encodeURIComponent(value)}; max-age=${days * 86400}; path=/; SameSite=Strict`;
