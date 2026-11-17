@@ -36,3 +36,42 @@ describe('StorageService write results', () => {
     expect(storage.getLocal<unknown>('storage-test', null)).toBe('previous');
   });
 });
+
+describe('StorageService cookie reads', () => {
+  function cookies(value: string) {
+    spyOnProperty(document, 'cookie', 'get').and.returnValue(value);
+  }
+
+  it('decodes valid values and preserves embedded equals signs', () => {
+    cookies('username=Ada%20Lovelace; token=abc=def');
+    const storage = TestBed.inject(StorageService);
+    expect(storage.getCookie('username')).toBe('Ada Lovelace');
+    expect(storage.getCookie('token')).toBe('abc=def');
+  });
+
+  for (const malformed of ['%', '%GG', '%E0%A4%A']) {
+    it(`returns an empty fallback for malformed encoding ${malformed} without changing cookies`, () => {
+      const raw = `broken=${malformed}; safe=hello%20world`;
+      cookies(raw);
+      const write = spyOnProperty(document, 'cookie', 'set');
+      const storage = TestBed.inject(StorageService);
+      expect(storage.getCookie('broken')).toBe('');
+      expect(storage.getCookie('safe')).toBe('hello world');
+      expect(document.cookie).toBe(raw);
+      expect(write).not.toHaveBeenCalled();
+    });
+  }
+
+  it('handles empty, missing and multiple cookies using exact names', () => {
+    cookies('prefix_name=wrong;name=; other=value; name_suffix=wrong');
+    const storage = TestBed.inject(StorageService);
+    expect(storage.getCookie('name')).toBe('');
+    expect(storage.getCookie('missing')).toBe('');
+    expect(storage.getCookie('other')).toBe('value');
+  });
+
+  it('handles browsers that deny cookie reads', () => {
+    spyOnProperty(document, 'cookie', 'get').and.throwError(new DOMException('Blocked', 'SecurityError'));
+    expect(TestBed.inject(StorageService).getCookie('artspace_theme')).toBe('');
+  });
+});
