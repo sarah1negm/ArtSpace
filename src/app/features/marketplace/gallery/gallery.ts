@@ -5,6 +5,7 @@ import { CartService } from '../cart';
 import { CATEGORIES, ArtworkCategory } from '../artworks';
 import { ArtworkCatalog } from '../artwork-catalog';
 import { AddToCart } from '../shared/add-to-cart';
+import { ListingsService } from '../listings.service';
 
 export type SortOrder = 'title' | 'price-asc' | 'price-desc' | 'popularity';
 @Component({
@@ -14,6 +15,7 @@ export type SortOrder = 'title' | 'price-asc' | 'price-desc' | 'popularity';
   styleUrls: ['../marketplace.scss', './gallery.scss'],
 })
 export class Gallery {
+  readonly listings = inject(ListingsService);
   readonly cartService: CartService = inject(CartService);
   readonly artworks = inject(ArtworkCatalog).artworks;
   readonly categories = CATEGORIES;

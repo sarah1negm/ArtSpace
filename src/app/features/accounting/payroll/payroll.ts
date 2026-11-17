@@ -9,7 +9,12 @@ import { AccountingService } from '../services/accounting.service';
   styleUrl: '../accounting.scss',
   template: `
     <h1>Staff payroll</h1>
+    @if (!acc.recordsAvailable()) {
+      <p role="alert">{{ acc.storageError() }} Payroll reports are unavailable until recovery succeeds.</p>
+      <button type="button" (click)="acc.retryLoad()">Retry loading accounting records</button>
+    }
 
+    @if (acc.recordsAvailable()) {
     <section class="panel">
       <h2>Teachers &amp; staff</h2>
       <div class="scroll">
@@ -52,6 +57,7 @@ import { AccountingService } from '../services/accounting.service';
         </table>
       </div>
     </section>
+    }
 
     @if (selected(); as s) {
       <section class="panel" aria-live="polite">
@@ -106,7 +112,7 @@ import { AccountingService } from '../services/accounting.service';
             }
           </select>
         </label>
-        <button type="submit">Generate report</button>
+        <button type="submit" [disabled]="!acc.recordsAvailable()">Generate report</button>
         @if (report()) {
           <button type="button" (click)="download()">Download JSON</button>
         }
@@ -122,7 +128,12 @@ export class Payroll {
   protected readonly selectedId = signal<string | null>(null);
   protected readonly selected = computed(() => this.acc.payroll().find((p) => p.id === this.selectedId()) ?? null);
   protected readonly message = signal('');
-  protected readonly report = signal<PayrollReport | null>(null);
+  private readonly generatedReport = signal<{ value: PayrollReport; revision: number } | null>(null);
+  protected readonly report = computed(() => {
+    const saved = this.generatedReport();
+    return this.acc.recordsAvailable() && saved?.revision === this.acc.dataRevision()
+      ? saved.value : null;
+  });
   protected readonly reportJson = computed(() => {
     const r = this.report();
     return r ? JSON.stringify(r, null, 2) : '';
@@ -155,7 +166,8 @@ export class Payroll {
 
   protected generate(e: Event, month: string): void {
     e.preventDefault();
-    this.report.set(this.acc.generateReport(month));
+    const value = this.acc.generateReport(month);
+    this.generatedReport.set(value ? { value, revision: this.acc.dataRevision() } : null);
   }
 
   protected download(): void {

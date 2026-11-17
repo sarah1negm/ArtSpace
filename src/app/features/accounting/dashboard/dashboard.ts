@@ -10,6 +10,10 @@ import { AccountingService } from '../services/accounting.service';
   styleUrl: '../accounting.scss',
   template: `
     <h1>Accounting dashboard</h1>
+    @if (!acc.recordsAvailable()) {
+      <p role="alert">Accounting records are unavailable. {{ acc.storageError() }}</p>
+      <button type="button" (click)="acc.retryLoad()">Retry loading accounting records</button>
+    } @else {
 
     <div class="grid">
       <div class="panel">
@@ -94,6 +98,7 @@ import { AccountingService } from '../services/accounting.service';
         <app-chart type="bar" label="Gallery sales and commission in EGP" [labels]="labels()" [datasets]="sales()" />
       </section>
     </div>
+    }
   `,
 })
 export class Dashboard {

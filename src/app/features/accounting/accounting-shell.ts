@@ -25,6 +25,9 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
         >
       </nav>
       @if (acc.storageError()) { <p role="alert">{{ acc.storageError() }}</p> }
+      @if (acc.loadStatus() === 'unreadable' || acc.loadStatus() === 'invalid') {
+        <button type="button" (click)="acc.retryLoad()">Retry loading accounting records</button>
+      }
       <router-outlet />
     </main>
   `,

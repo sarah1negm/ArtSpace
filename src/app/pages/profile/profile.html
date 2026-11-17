@@ -30,6 +30,10 @@
 
       <button type="button" class="primary-btn" (click)="startEdit()">Edit profile</button>
       @if (user.role === 'student') {
+        @if (student.loadStatus() === 'unreadable' || student.loadStatus() === 'invalid') {
+          <p role="alert">{{ student.storageError() }}</p>
+          <button type="button" (click)="student.retryLoad()">Retry loading student records</button>
+        } @else {
         <h2>My artwork listings</h2>
         <ul>
           @for (artwork of listings(); track artwork.id) {
@@ -38,6 +42,7 @@
             <li>No artwork listings yet.</li>
           }
         </ul>
+        }
         <a routerLink="/student/artwork">Manage artwork listings</a>
       }
     } @else {

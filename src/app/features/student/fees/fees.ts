@@ -9,6 +9,10 @@ import { StudentService } from '../student.service';
   styleUrl: '../student.scss',
   template: `
     <h1>Student fees</h1>
+    @if (!student.recordsAvailable()) {
+      <p role="alert">{{ student.storageError() }} Fee balances and payment history are unavailable until recovery succeeds.</p>
+      <button type="button" (click)="student.retryLoad()">Retry loading student records</button>
+    } @else {
     <p>
       Outstanding balance <strong>{{ student.outstanding() | currency: 'EGP' : 'code' }}</strong>
     </p>
@@ -52,6 +56,7 @@ import { StudentService } from '../student.service';
         }
       </ul>
     </section>
+    }
   `,
 })
 export class Fees {

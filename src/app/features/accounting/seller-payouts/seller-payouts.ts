@@ -8,6 +8,10 @@ import { AccountingService } from '../services/accounting.service';
   styleUrl: '../accounting.scss',
   template: `
     <h1>Seller payouts</h1>
+    @if (!acc.recordsAvailable()) {
+      <p role="alert">Accounting records are unavailable. {{ acc.storageError() }}</p>
+      <button type="button" (click)="acc.retryLoad()">Retry loading accounting records</button>
+    } @else {
     <p>
       ArtSpace keeps a {{ acc.commissionRate * 100 }}% commission on every sale. The rest is paid out to the
       student who sold the artwork (simulated, no real payment).
@@ -110,6 +114,7 @@ import { AccountingService } from '../services/accounting.service';
         </table>
       </div>
     </section>
+    }
   `,
 })
 export class SellerPayouts {

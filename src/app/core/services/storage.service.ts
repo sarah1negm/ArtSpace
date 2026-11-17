@@ -1,9 +1,22 @@
 import { Injectable } from '@angular/core';
 
 export type StorageReadResult<T> = { ok: true; value: T } | { ok: false };
+export type StoredData<T> =
+  | { status: 'loaded'; value: T }
+  | { status: 'missing' | 'unreadable' | 'invalid' };
 
 @Injectable({ providedIn: 'root' })
 export class StorageService {
+  loadLocal<T>(key: string, valid: (value: unknown) => value is T): StoredData<T> {
+    let raw: string | null;
+    try { raw = localStorage.getItem(key); }
+    catch { return { status: 'unreadable' }; }
+    if (raw === null) return { status: 'missing' };
+    try {
+      const value: unknown = JSON.parse(raw);
+      return valid(value) ? { status: 'loaded', value } : { status: 'invalid' };
+    } catch { return { status: 'invalid' }; }
+  }
   // Unlike getLocal's fallback, this preserves the distinction between missing and unreadable data.
   readLocal<T>(key: string, fallback: T): StorageReadResult<T> {
     try {

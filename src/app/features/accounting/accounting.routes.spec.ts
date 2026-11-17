@@ -26,11 +26,12 @@ describe('Accounting portal routes', () => {
             isLoggedIn: () => !!currentUser(),
             role: (): Role | null => currentUser()?.role ?? null,
             getRememberedUsername: () => '',
+            readStudentArtists: () => ({ ok: true, value: [] }),
           },
         },
         {
           provide: StorageService,
-          useValue: { getLocal: (_k: string, fallback: unknown) => fallback, setLocal: () => true },
+          useValue: { loadLocal: () => ({ status: 'missing' }), setLocal: () => true },
         },
       ],
     });

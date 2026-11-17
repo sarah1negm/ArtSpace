@@ -1,12 +1,15 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { AuthService } from '../../core/services/auth.service';
-import { StorageService } from '../../core/services/storage.service';
+import { StorageService, StoredData } from '../../core/services/storage.service';
 import { COURSES, FEES, INITIAL_RECORDS, MEMBERSHIP, SALES } from './student.mock';
 import { ArtworkDraft, StudentRecords } from './student.models';
+import { loadError } from '../../core/services/storage-validation';
+import { isStudentRecords } from './student.validation';
 
 @Injectable({ providedIn: 'root' })
 export class StudentService {
-  readonly storageError = signal('');
+  private readonly writeError = signal('');
+  private readonly retryVersion = signal(0);
   private readonly auth = inject(AuthService);
   private readonly storage = inject(StorageService);
   private readonly student = computed(() => {
@@ -18,12 +21,32 @@ export class StudentService {
     return student ? this.storageKey(student.id) : null;
   });
   private readonly saved = signal<{ key: string; records: StudentRecords } | null>(null);
-  private readonly records = computed(() => {
+  private readonly loaded = computed<StoredData<StudentRecords>>(() => {
+    this.retryVersion();
     const key = this.key();
     const saved = this.saved();
-    if (!key) return { invoices: [], artworks: [] };
-    return saved?.key === key ? saved.records : this.storage.getLocal(key, INITIAL_RECORDS);
+    if (!key) return { status: 'missing' };
+    return saved?.key === key ? { status: 'loaded', value: saved.records }
+      : this.storage.loadLocal(key, isStudentRecords);
   });
+  readonly loadStatus = computed(() => this.loaded().status);
+  readonly recordsAvailable = computed(() => ['loaded', 'missing'].includes(this.loadStatus()));
+  readonly storageError = computed(() => loadError(this.loadStatus(), 'student records') || this.writeError());
+  private readonly records = computed<StudentRecords>(() => {
+    if (!this.key()) return { invoices: [], artworks: [] };
+    const result = this.loaded();
+    return result.status === 'loaded' ? result.value : result.status === 'missing'
+      ? INITIAL_RECORDS : { invoices: [], artworks: [] };
+  });
+
+  retryLoad(): void {
+    this.writeError.set('');
+    this.saved.set(null);
+    this.retryVersion.update(value => value + 1);
+  }
+  private canWrite(): boolean {
+    return !!this.key() && ['loaded', 'missing'].includes(this.loadStatus());
+  }
 
   readonly profile = computed(() => {
     const student = this.student();
@@ -34,17 +57,35 @@ export class StudentService {
   readonly courses = COURSES;
   readonly membership = MEMBERSHIP;
   readonly artworks = computed(() => this.records().artworks);
-  readonly publicListings = computed(() => {
+  private readonly artists = computed(() => {
+    this.retryVersion();
+    return this.auth.readStudentArtists();
+  });
+  private readonly listingLoads = computed(() => {
+    this.retryVersion();
     const saved = this.saved();
-    return this.auth.getStudentArtists().flatMap((artist) => {
+    const artists = this.artists();
+    if (!artists.ok) return [];
+    return artists.value.map(artist => {
       const key = this.storageKey(artist.id);
-      const records =
-        saved?.key === key ? saved.records : this.storage.getLocal(key, INITIAL_RECORDS);
-      return records.artworks.map((artwork) => ({ ...artwork, artist: artist.name }));
+      const result = key === this.key() ? this.loaded() : saved?.key === key
+        ? { status: 'loaded' as const, value: saved.records }
+        : this.storage.loadLocal(key, isStudentRecords);
+      return { artist, result };
     });
   });
+  readonly listingsError = computed(() => {
+    if (!this.artists().ok) return loadError('unreadable', 'student artist accounts');
+    const failed = this.listingLoads().find(({ result }) =>
+      result.status === 'invalid' || result.status === 'unreadable');
+    return failed ? loadError(failed.result.status, 'student artwork listings') : '';
+  });
+  readonly publicListings = computed(() => this.listingLoads().flatMap(({ artist, result }) =>
+    result.status === 'loaded'
+      ? result.value.artworks.map(artwork => ({ ...artwork, artist: artist.name })) : []));
+
   readonly fees = computed(() =>
-    FEES.map((fee) => {
+    !this.recordsAvailable() ? [] : FEES.map((fee) => {
       const invoice = this.records().invoices.find((item) => item.feeId === fee.id);
       return { ...fee, invoice, balance: invoice?.paidOn ? 0 : fee.amount };
     }),
@@ -69,7 +110,8 @@ export class StudentService {
       .filter((invoice) => invoice.paidOn)
       .sort((a, b) => (b.paidOn ?? '').localeCompare(a.paidOn ?? '')),
   );
-  readonly outstanding = computed(() => this.fees().reduce((sum, fee) => sum + fee.balance, 0));
+  readonly outstanding = computed(() => this.recordsAvailable()
+    ? this.fees().reduce((sum, fee) => sum + fee.balance, 0) : null);
   readonly sales = SALES.map((sale) => {
     const commission = Math.round(sale.price * sale.commissionRate * 100) / 100;
     return { ...sale, commission, earnings: sale.price - commission };
@@ -77,8 +119,8 @@ export class StudentService {
   readonly earnings = this.sales.reduce((sum, sale) => sum + sale.earnings, 0);
 
   createInvoice(feeId: string): string | null {
-    this.storageError.set('');
-    if (!this.key() || !FEES.some((fee) => fee.id === feeId)) return null;
+    this.writeError.set('');
+    if (!this.canWrite() || !FEES.some((fee) => fee.id === feeId)) return null;
     const records = this.records();
     const existing = records.invoices.find((invoice) => invoice.feeId === feeId);
     if (existing) return existing.id;
@@ -90,7 +132,8 @@ export class StudentService {
   }
 
   payInvoice(id: string): boolean {
-    this.storageError.set('');
+    this.writeError.set('');
+    if (!this.canWrite()) return false;
     const records = this.records();
     return this.save({
       ...records,
@@ -101,7 +144,8 @@ export class StudentService {
   }
 
   saveArtwork(draft: ArtworkDraft, id?: string): boolean {
-    this.storageError.set('');
+    this.writeError.set('');
+    if (!this.canWrite()) return false;
     const title = draft.title.trim();
     const description = draft.description.trim();
     const imageUrl = draft.imageUrl.trim();
@@ -141,17 +185,18 @@ export class StudentService {
   }
 
   removeArtwork(id: string): boolean {
-    this.storageError.set('');
+    this.writeError.set('');
+    if (!this.canWrite()) return false;
     const records = this.records();
     return this.save({ ...records, artworks: records.artworks.filter((artwork) => artwork.id !== id) });
   }
 
   private save(records: StudentRecords): boolean {
-    this.storageError.set('');
+    this.writeError.set('');
     const key = this.key();
-    if (!key) return false;
+    if (!key || !this.canWrite()) return false;
     if (!this.storage.setLocal(key, records)) {
-      this.storageError.set('Your changes could not be saved. Browser storage may be full or blocked. Your previous data has been kept. Please free storage or allow site storage, then try again.');
+      this.writeError.set('Your changes could not be saved. Browser storage may be full or blocked. Your previous data has been kept. Please free storage or allow site storage, then try again.');
       return false;
     }
     this.saved.set({ key, records });

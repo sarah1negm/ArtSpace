@@ -12,14 +12,18 @@ import { StudentService } from '../student.service';
       <h1>Welcome, {{ profile.name }}</h1>
       <p>{{ profile.username }} · {{ profile.email }}</p>
     }
+    @if (!student.recordsAvailable()) {
+      <p role="alert">Student records are unavailable. {{ student.storageError() }}</p>
+      <button type="button" (click)="student.retryLoad()">Retry loading student records</button>
+    }
     <div class="grid">
       <div class="panel">
         <a routerLink="fees">Outstanding fees</a>
-        <strong class="metric">{{ student.outstanding() | currency: 'EGP' : 'code' }}</strong>
+        <strong class="metric">{{ student.recordsAvailable() ? (student.outstanding() | currency: 'EGP' : 'code') : 'Unavailable' }}</strong>
       </div>
       <div class="panel">
         <a routerLink="artwork">Artwork listings</a>
-        <strong class="metric">{{ student.artworks().length }}</strong>
+        <strong class="metric">{{ student.recordsAvailable() ? student.artworks().length : 'Unavailable' }}</strong>
       </div>
       <div class="panel">
         <a routerLink="sales">Expected earnings</a>

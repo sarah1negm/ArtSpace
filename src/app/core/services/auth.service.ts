@@ -1,6 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Role, User } from '../models/user.model';
-import { StorageService } from './storage.service';
+import { StorageReadResult, StorageService } from './storage.service';
 
 export interface AuthResult {
   ok: boolean;
@@ -51,10 +51,18 @@ export class AuthService {
     return true;
   }
   getStudentArtists(): { id: string; name: string }[] {
+    const result = this.readStudentArtists();
+    return result.ok ? result.value : [];
+  }
+  // Catalogue consumers must distinguish an empty artist list from a failed account read.
+  readStudentArtists(): StorageReadResult<{ id: string; name: string }[]> {
     this.usersRevision();
-    return (this.getUsers() ?? [])
-      .filter((user) => user.role === 'student')
-      .map(({ id, name }) => ({ id, name }));
+    const users = this.getUsers();
+    if (!users) return { ok: false };
+    return {
+      ok: true,
+      value: users.filter((user) => user.role === 'student').map(({ id, name }) => ({ id, name })),
+    };
   }
   private loadSession(): User | null {
     const session = this.storage.readSessionString(this.SESSION_KEY);

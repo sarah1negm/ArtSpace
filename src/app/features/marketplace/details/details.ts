@@ -4,6 +4,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ArtworkCatalog } from '../artwork-catalog';
 import { AddToCart } from '../shared/add-to-cart';
+import { ListingsService } from '../listings.service';
 
 @Component({
   selector: 'app-artwork-details',
@@ -12,6 +13,7 @@ import { AddToCart } from '../shared/add-to-cart';
   styleUrls: ['../marketplace.scss', './details.scss'],
 })
 export class ArtworkDetails {
+  readonly listings = inject(ListingsService);
   private readonly catalog = inject(ArtworkCatalog);
   private readonly params = toSignal(inject(ActivatedRoute).paramMap);
   readonly artwork = computed(() =>

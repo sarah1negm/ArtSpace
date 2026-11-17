@@ -1,14 +1,20 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { Artwork } from './artworks';
 import { ArtworkCatalog } from './artwork-catalog';
-import { StorageService } from '../../core/services/storage.service';
+import { StudentService } from '../student/student.service';
+import { loadError } from '../../core/services/storage-validation';
+import { StorageService, StoredData } from '../../core/services/storage.service';
 
 @Injectable({ providedIn: 'root' })
 export class CartService {
   private readonly catalog = inject(ArtworkCatalog);
   private readonly storage = inject(StorageService);
   private readonly storageKey = 'artspace-cart';
-  readonly storageError = signal('');
+  private readonly students = inject(StudentService);
+  private readonly writeError = signal('');
+  readonly loadStatus = signal<StoredData<unknown>['status']>('missing');
+  readonly readError = computed(() => loadError(this.loadStatus(), 'cart') || this.students.listingsError());
+  readonly storageError = computed(() => this.readError() || this.writeError());
   private readonly cartIds = signal<Artwork['id'][]>(this.loadCart());
   readonly items = computed(() => this.resolve(this.cartIds()));
   readonly total = computed(() => this.items().reduce((sum, item) => sum + item.price, 0));
@@ -23,6 +29,7 @@ export class CartService {
   });
 
   setQuantity(id: Artwork['id'], quantity: number): boolean {
+    if (!this.canWrite()) return false;
     if (!Number.isInteger(quantity) || quantity < 1 || quantity > 99) return false;
     if (!this.items().some((item) => item.id === id)) return false;
     let replaced = false;
@@ -44,6 +51,7 @@ export class CartService {
   }
 
   addToCart(artwork: Artwork): boolean {
+    if (!this.canWrite()) return false;
     const item = this.catalog.artworks().find((candidate) => candidate.id === artwork.id);
     if (!item || this.items().filter((existing) => existing.id === item.id).length >= 99)
       return false;
@@ -66,10 +74,11 @@ export class CartService {
   }
 
   private saveCart(nextIds: Artwork['id'][]): boolean {
-    this.storageError.set('');
+    this.writeError.set('');
+    if (!this.canWrite()) return false;
     // Keep the existing array-of-artworks storage format and resolve current prices.
     if (!this.storage.setLocal(this.storageKey, this.resolve(nextIds))) {
-      this.storageError.set(
+      this.writeError.set(
         'Your cart could not be saved. Browser storage may be full or blocked. Your cart has not changed. Please free storage or allow site storage, then try again.',
       );
       return false;
@@ -78,15 +87,29 @@ export class CartService {
     return true;
   }
 
+  retryLoad(): void {
+    this.writeError.set('');
+    this.students.retryLoad();
+    const ids = this.loadCart();
+    if (['loaded', 'missing'].includes(this.loadStatus())) this.cartIds.set(ids);
+  }
+
+  private canWrite(): boolean {
+    return ['loaded', 'missing'].includes(this.loadStatus()) && !this.students.listingsError();
+  }
+
   private loadCart(): Artwork['id'][] {
-    const saved = this.storage.getLocal<unknown>(this.storageKey, []);
-    if (!Array.isArray(saved)) return [];
+    const result = this.storage.loadLocal(this.storageKey, (value): value is unknown[] => Array.isArray(value));
+    this.loadStatus.set(result.status);
+    if (result.status !== 'loaded') return [];
     const counts = new Map<Artwork['id'], number>();
-    return saved.flatMap((value) => {
-      const item = this.catalog.artworks().find((artwork) => artwork.id === value?.id);
-      if (!item || (counts.get(item.id) ?? 0) >= 99) return [];
-      counts.set(item.id, (counts.get(item.id) ?? 0) + 1);
-      return [item.id];
+    return result.value.flatMap(value => {
+      // Keep unresolved IDs until the catalogue recovers; never trust persisted prices.
+      const id = value && typeof value === 'object' ? (value as { id?: unknown }).id : null;
+      if (!(typeof id === 'string' || typeof id === 'number' && Number.isFinite(id)) ||
+          (counts.get(id) ?? 0) >= 99) return [];
+      counts.set(id, (counts.get(id) ?? 0) + 1);
+      return [id];
     });
   }
 }

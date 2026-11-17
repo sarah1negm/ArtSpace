@@ -1,13 +1,18 @@
 <section class="marketplace">
+  @if (listings.storageError()) {
+    <p role="alert">{{ listings.storageError() }}</p>
+    <button type="button" class="button secondary" (click)="listings.retryLoad()">Retry loading artworks</button>
+  }
   <header class="page-header">
     <div>
       <h1>ArtSpace Gallery</h1>
       <p>Explore and purchase artwork created by our students.</p>
     </div>
     <a class="button secondary" routerLink="/gallery/cart"
-      >Cart ({{ cartService.items().length }})</a
+      >Cart ({{ cartService.readError() ? 'Unavailable' : cartService.items().length }})</a
     >
   </header>
+  @if (!listings.storageError()) {
   <section class="filters" aria-label="Search and filter artworks">
     <label
       >Search artwork name<input
@@ -80,4 +85,5 @@
       <p>No artworks match your filters. Try another search or reset the filters.</p>
     }
   </div>
+  }
 </section>

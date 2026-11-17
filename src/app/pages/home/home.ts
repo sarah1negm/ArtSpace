@@ -11,7 +11,8 @@ import { ListingsService } from '../../features/marketplace/listings.service';
 })
 export class Home {
   auth = inject(AuthService);
-  readonly studentListings = inject(ListingsService).studentListings;
+  readonly listings = inject(ListingsService);
+  readonly studentListings = this.listings.studentListings;
 
   features = [
     { icon: '🎨', title: 'For students', text: 'Manage your courses and studio fees, and list your artwork for sale.' },
