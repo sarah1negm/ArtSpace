@@ -139,6 +139,13 @@ dd {
 .neg {
   color: #b3261e;
 }
+// Reuse the auth theme's readable success/error colors on dark card surfaces.
+:host-context([data-theme='dark']) .pos {
+  color: #8ee3ad;
+}
+:host-context([data-theme='dark']) .neg {
+  color: #ffb4ab;
+}
 .inline-form {
   display: flex;
   flex-wrap: wrap;

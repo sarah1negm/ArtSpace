@@ -8,6 +8,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { StorageService } from '../../core/services/storage.service';
 
 describe('Accounting portal routes', () => {
+  let originalTheme: string | null;
   const currentUser = signal<User | null>(null);
   const user = (role: Role): User => ({
     id: 'u1', name: 'Test', username: 'test', email: 't@example.com', role,
@@ -15,6 +16,7 @@ describe('Accounting portal routes', () => {
   });
 
   beforeEach(() => {
+    originalTheme = document.documentElement.getAttribute('data-theme');
     currentUser.set(user('accountant'));
     TestBed.configureTestingModule({
       providers: [
@@ -35,6 +37,73 @@ describe('Accounting portal routes', () => {
         },
       ],
     });
+  });
+
+  afterEach(() => {
+    if (originalTheme === null) document.documentElement.removeAttribute('data-theme');
+    else document.documentElement.setAttribute('data-theme', originalTheme);
+  });
+
+  function contrast(foreground: string, background: string): number {
+    const luminance = (color: string) => {
+      const rgb = color.match(/[\d.]+/g)!.slice(0, 3).map(Number).map(value => {
+        const channel = value / 255;
+        return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+      });
+      return rgb[0] * 0.2126 + rgb[1] * 0.7152 + rgb[2] * 0.0722;
+    };
+    const a = luminance(foreground), b = luminance(background);
+    return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+  }
+
+  for (const theme of ['light', 'dark']) {
+    it(`keeps Accounting status text above 4.5:1 on rendered backgrounds in ${theme} mode`, async () => {
+      document.documentElement.setAttribute('data-theme', theme);
+      const harness = await RouterTestingHarness.create();
+      for (const path of ['/accounting', '/accounting/budget', '/accounting/payroll', '/accounting/payouts']) {
+        await harness.navigateByUrl(path);
+        const root = harness.routeNativeElement!;
+        const statuses = root.querySelectorAll<HTMLElement>('.pos, .neg');
+        if (path === '/accounting' || path === '/accounting/budget') {
+          expect(statuses.length).withContext(path).toBeGreaterThan(0);
+        }
+        for (const status of statuses) {
+          const background = getComputedStyle(status.closest('.panel')!).backgroundColor;
+          expect(background).toBe(theme === 'dark' ? 'rgb(34, 31, 46)' : 'rgb(255, 255, 255)');
+          // Exercise both profit/loss states even when mock figures all have the same sign.
+          for (const sign of ['pos', 'neg']) {
+            status.classList.remove('pos', 'neg');
+            status.classList.add(sign);
+            expect(contrast(getComputedStyle(status).color, background))
+              .withContext(`${path} ${sign} in ${theme}`).toBeGreaterThanOrEqual(4.5);
+          }
+        }
+        for (const badge of root.querySelectorAll<HTMLElement>('.badge')) {
+          const style = getComputedStyle(badge);
+          expect(contrast(style.color, style.backgroundColor))
+            .withContext(`${path} badge in ${theme}`).toBeGreaterThanOrEqual(4.5);
+        }
+      }
+    });
+  }
+
+  it('updates status colors when the theme changes on an existing Accounting page', async () => {
+    const harness = await RouterTestingHarness.create('/accounting');
+    const status = harness.routeNativeElement!.querySelector<HTMLElement>('.pos, .neg')!;
+    expect(status).not.toBeNull();
+    const panel = status.closest('.panel')!;
+    for (const sign of ['pos', 'neg']) {
+      status.classList.remove('pos', 'neg');
+      status.classList.add(sign);
+      document.documentElement.setAttribute('data-theme', 'light');
+      const light = getComputedStyle(status).color;
+      document.documentElement.setAttribute('data-theme', 'dark');
+      expect(getComputedStyle(status).color).not.toBe(light);
+      expect(contrast(getComputedStyle(status).color, getComputedStyle(panel).backgroundColor))
+        .toBeGreaterThanOrEqual(4.5);
+      document.documentElement.setAttribute('data-theme', 'light');
+      expect(getComputedStyle(status).color).toBe(light);
+    }
   });
 
   it('renders every accounting page for an accountant', async () => {
