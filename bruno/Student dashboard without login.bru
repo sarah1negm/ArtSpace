@@ -1,0 +1,22 @@
+meta {
+  name: Student dashboard without login
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/student/dashboard
+  body: none
+  auth: none
+}
+
+headers {
+  Accept: application/json
+}
+
+tests {
+  test("Returns HTTP 401", function () {
+    expect(res.getStatus()).to.equal(401);
+    expect(res.getBody().message).to.be.a("string");
+  });
+}

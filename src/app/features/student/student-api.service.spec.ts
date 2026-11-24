@@ -5,7 +5,7 @@ import { TestBed } from '@angular/core/testing';
 import { AuthService } from '../../core/services/auth.service';
 import { ArtworkCatalog } from '../marketplace/artwork-catalog';
 import { CartService } from '../marketplace/cart';
-import { USE_STUDENT_API } from './student-api.service';
+import { InvoiceDetails, USE_STUDENT_API } from './student-api.service';
 import { StudentService } from './student.service';
 
 describe('Laravel student data through the Angular portal', () => {
@@ -42,17 +42,22 @@ describe('Laravel student data through the Angular portal', () => {
     localStorage.clear();
   });
 
-  function respondToStudentReads(artworks = [artwork]) {
+  function respondToStudentReads(artworks = [artwork], invoice?: InvoiceDetails) {
+    const outstanding = invoice?.paidOn ? 0 : 100;
     http.expectOne('/api/student/dashboard').flush({
       profile: { name: 'Student', email: 'student@example.com', username: 'student' },
       courses: ['Drawing'],
       membership: { name: 'Open Studio', expiresOn: '2027-01-31' },
-      outstanding: 100,
-      totalPaid: 0,
+      outstanding,
+      totalPaid: invoice?.paidOn ? invoice.amount : 0,
       earnings: 12,
     });
-    http.expectOne('/api/student/fees').flush({ fees: [], outstanding: 100, paymentHistory: [] });
-    http.expectOne('/api/student/invoices').flush([]);
+    http.expectOne('/api/student/fees').flush({
+      fees: [],
+      outstanding,
+      paymentHistory: invoice?.paidOn ? [invoice] : [],
+    });
+    http.expectOne('/api/student/invoices').flush(invoice ? [invoice] : []);
     http.expectOne('/api/student/sales').flush({ sales: [], earnings: 12 });
     http.expectOne('/api/student/artworks').flush(artworks);
   }
@@ -88,6 +93,42 @@ describe('Laravel student data through the Angular portal', () => {
     http.expectOne('/api/artworks').flush([]);
     await removing;
     expect(cart.items()).toEqual([]);
+  });
+
+  it('refreshes the invoice, balance, and payment history after a simulated payment', async () => {
+    http.expectOne('/api/artworks').flush([]);
+    respondToStudentReads();
+    await Promise.resolve();
+
+    const invoice: InvoiceDetails = {
+      id: '2',
+      feeId: '1',
+      label: 'Studio fee',
+      type: 'Studio',
+      amount: 100,
+      dueDate: '2026-12-01',
+      issuedOn: '2026-11-24',
+      paidOn: null,
+    };
+    const creating = students.api!.createInvoice(invoice.feeId);
+    const create = http.expectOne({ method: 'POST', url: '/api/student/invoices' });
+    expect(create.request.body).toEqual({ feeId: invoice.feeId });
+    create.flush(invoice);
+    await Promise.resolve();
+    respondToStudentReads([artwork], invoice);
+    expect(await creating).toEqual(invoice);
+    expect(students.invoices()).toEqual([invoice]);
+    expect(students.outstanding()).toBe(100);
+
+    const paid = { ...invoice, paidOn: '2026-11-24' };
+    const paying = students.api!.payInvoice(invoice.id);
+    http.expectOne({ method: 'POST', url: '/api/student/invoices/2/payments' }).flush(paid);
+    await Promise.resolve();
+    respondToStudentReads([artwork], paid);
+    expect(await paying).toEqual(paid);
+    expect(students.invoices()).toEqual([paid]);
+    expect(students.paymentHistory()).toEqual([paid]);
+    expect(students.outstanding()).toBe(0);
   });
 
   it('clears private records on logout while retaining the public catalogue', async () => {

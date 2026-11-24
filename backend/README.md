@@ -34,3 +34,7 @@ Laravel uses an HttpOnly session cookie to identify the server session and a sep
 ## Tests
 
 After generating the local application key, run `php artisan test` from this directory. The default suite creates its own in-memory SQLite database. Run Angular tests and the production build with `npm test -- --watch=false --browsers=ChromeHeadless` and `npm run build` from the project root.
+
+## Local demo records
+
+Set `ARTSPACE_DEMO_PASSWORD` in your terminal to a local-only password of at least 12 bytes before running `php artisan db:seed --class=StudentDemoSeeder` from `backend`. This adds student users `portal-demo-one@example.test` and `portal-demo-two@example.test`, course and studio fees, and sale records with paid and pending payouts. Rerunning the seeder preserves existing passwords, invoices, and payments. Sign-in using these accounts requires the shared Laravel login.
