@@ -95,7 +95,7 @@ export class CartService {
   }
 
   private canWrite(): boolean {
-    return ['loaded', 'missing'].includes(this.loadStatus()) && !this.students.listingsError();
+    return ['loaded', 'missing'].includes(this.loadStatus()) && this.students.listingsReady() && !this.students.listingsError();
   }
 
   private loadCart(): Artwork['id'][] {

@@ -10,7 +10,7 @@ import { StudentService } from '../student.service';
   template: `
     @if (student.profile(); as profile) {
       <h1>Welcome, {{ profile.name }}</h1>
-      <p>{{ profile.username }} · {{ profile.email }}</p>
+      <p>@if (profile.username) { {{ profile.username }} · } {{ profile.email }}</p>
     }
     @if (!student.recordsAvailable()) {
       <p role="alert">Student records are unavailable. {{ student.storageError() }}</p>
@@ -41,8 +41,12 @@ import { StudentService } from '../student.service';
       </section>
       <section class="panel">
         <h2>Studio membership</h2>
-        <p>{{ student.membership.name }}</p>
-        <p>Expires {{ student.membership.expiresOn | date: 'mediumDate' }}</p>
+        @if (student.membership; as membership) {
+          <p>{{ membership.name }}</p>
+          <p>Expires {{ membership.expiresOn | date: 'mediumDate' }}</p>
+        } @else if (student.recordsAvailable()) {
+          <p>No studio membership.</p>
+        }
       </section>
     </div>
   `,

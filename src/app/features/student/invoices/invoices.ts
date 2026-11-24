@@ -8,6 +8,7 @@ import { StudentService } from '../student.service';
   styleUrl: '../student.scss',
   template: `
     <h1>Invoices</h1>
+    <p role="status">{{ message() }}</p>
     @if (!student.recordsAvailable()) {
       <p role="alert">Student records are unavailable. {{ student.storageError() }}</p>
       <button type="button" (click)="student.retryLoad()">Retry loading student records</button>
@@ -27,7 +28,7 @@ import { StudentService } from '../student.service';
               }
             </select>
           </label>
-          <button type="submit">Create invoice</button>
+          <button type="submit" [disabled]="student.busy()">Create invoice</button>
         </form>
       </section>
     }
@@ -75,7 +76,7 @@ import { StudentService } from '../student.service';
           <dd>{{ (invoice.paidOn | date: 'mediumDate') ?? 'Unpaid' }}</dd>
         </dl>
         @if (!invoice.paidOn) {
-          <button type="button" (click)="student.payInvoice(invoice.id)">Simulate payment</button>
+          <button type="button" [disabled]="student.busy()" (click)="pay(invoice.id)">Simulate payment</button>
         }
       </section>
     }
@@ -90,8 +91,22 @@ export class Invoices {
   );
   protected readonly uninvoiced = computed(() => this.student.fees().filter((fee) => !fee.invoice));
 
-  protected create(feeId: string): void {
-    const id = this.student.createInvoice(feeId);
-    if (id) this.selectedId.set(id);
+  protected readonly message = signal('');
+
+  protected async create(feeId: string): Promise<void> {
+    this.message.set('');
+    const id = this.student.api
+      ? (await this.student.api.createInvoice(feeId))?.id
+      : this.student.createInvoice(feeId);
+    if (id) {
+      this.selectedId.set(id);
+      this.message.set('Invoice created.');
+    }
+  }
+
+  protected async pay(id: string): Promise<void> {
+    this.message.set('');
+    const paid = this.student.api ? await this.student.api.payInvoice(id) : this.student.payInvoice(id);
+    if (paid) this.message.set('Simulated payment recorded.');
   }
 }

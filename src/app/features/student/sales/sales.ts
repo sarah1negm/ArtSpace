@@ -20,6 +20,7 @@ import { StudentService } from '../student.service';
             <th>Sale price</th>
             <th>ArtSpace commission</th>
             <th>Earnings</th>
+            <th>Payout</th>
           </tr>
         </thead>
         <tbody>
@@ -34,7 +35,12 @@ import { StudentService } from '../student.service';
                 }})
               </td>
               <td>{{ sale.earnings | currency: 'EGP' : 'code' }}</td>
+              <td>{{ sale.payoutStatus ?? 'Unavailable' }}</td>
             </tr>
+          } @empty {
+            @if (student.recordsAvailable()) {
+              <tr><td colspan="6">No sales yet.</td></tr>
+            }
           }
         </tbody>
       </table>

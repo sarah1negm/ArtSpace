@@ -52,7 +52,7 @@ import { StudentService } from '../student.service';
           <p role="alert">{{ error() }}</p>
         }
         <div class="actions">
-          <button type="submit" [disabled]="readingImage()">
+          <button type="submit" [disabled]="readingImage() || student.busy()">
             {{ editingId() ? 'Save changes' : 'Add listing' }}
           </button>
           @if (editingId()) {
@@ -87,7 +87,7 @@ import { StudentService } from '../student.service';
           <div class="actions">
             <button type="button" (click)="edit(artwork)">Edit</button>
             @if (removingId() === artwork.id) {
-              <button type="button" (click)="remove(artwork)">Confirm removal</button>
+              <button type="button" [disabled]="student.busy()" (click)="remove(artwork)">Confirm removal</button>
               <button type="button" (click)="removingId.set(null)">Keep listing</button>
             } @else {
               <button type="button" (click)="removingId.set(artwork.id)">Remove</button>
@@ -133,6 +133,13 @@ export class ArtworkManagement {
       this.error.set('Choose a JPEG, PNG, WebP or GIF image up to 500 KB.');
       return;
     }
+    if (this.student.api) {
+      this.selectedFile = file;
+      this.fileName.set(file.name);
+      this.error.set('');
+      this.form.controls.imageUrl.setValue('');
+      return;
+    }
     const reader = new FileReader();
     this.imageReader = reader;
     this.readingImage.set(true);
@@ -154,7 +161,7 @@ export class ArtworkManagement {
     this.failedImages.update((images) => new Map(images).set(artwork.id, artwork.imageUrl));
   }
 
-  protected submit(): void {
+  protected async submit(): Promise<void> {
     if (this.readingImage()) return;
     const editingId = this.editingId();
     const draft = this.form.getRawValue();
@@ -165,7 +172,11 @@ export class ArtworkManagement {
       this.error.set('Enter a title, description, positive price, and an image file or HTTP(S) URL.');
       return;
     }
-    if (!this.student.saveArtwork({ ...draft, imageUrl }, editingId ?? undefined)) {
+    const id = editingId ?? undefined;
+    const saved = this.student.api
+      ? await this.student.api.saveArtwork({ ...draft, imageUrl }, id, imageUrl ? undefined : this.selectedFile)
+      : this.student.saveArtwork({ ...draft, imageUrl }, id);
+    if (!saved) {
       this.error.set(this.student.storageError() || 'Enter a title, description, positive price, and an image file or HTTP(S) URL.');
       return;
     }
@@ -189,6 +200,7 @@ export class ArtworkManagement {
   protected reset(): void {
     this.cancelImageRead();
     this.selectedImage = '';
+    this.selectedFile = undefined;
     this.fileName.set('');
     this.editingId.set(null);
     this.form.reset();
@@ -196,15 +208,17 @@ export class ArtworkManagement {
   }
 
   private selectedImage = '';
+  private selectedFile?: File;
 
   private cancelImageRead(): void {
     this.imageReader?.abort();
     this.readingImage.set(false);
   }
 
-  protected remove(artwork: Artwork): void {
+  protected async remove(artwork: Artwork): Promise<void> {
     this.message.set('');
-    if (!this.student.removeArtwork(artwork.id)) {
+    const removed = this.student.api ? await this.student.api.removeArtwork(artwork.id) : this.student.removeArtwork(artwork.id);
+    if (!removed) {
       this.error.set(this.student.storageError());
       return;
     }

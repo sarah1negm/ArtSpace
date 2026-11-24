@@ -36,7 +36,7 @@ import { StudentService } from '../student.service';
               <td>{{ fee.dueDate | date: 'mediumDate' }}</td>
               <td>{{ fee.amount | currency: 'EGP' : 'code' }}</td>
               <td>{{ fee.balance | currency: 'EGP' : 'code' }}</td>
-              <td>{{ fee.balance ? 'Unpaid' : 'Paid' }}</td>
+              <td>{{ fee.invoice ? (fee.invoice.paidOn ? 'Paid' : 'Unpaid') : 'Not invoiced' }}</td>
             </tr>
           }
         </tbody>
