@@ -1,5 +1,5 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { AuthService } from '../../core/services/auth.service';
+import { AuthService, LOCAL_STUDENT_LOGIN } from '../../core/services/auth.service';
 import { StorageService, StoredData } from '../../core/services/storage.service';
 import { COURSES, FEES, INITIAL_RECORDS, MEMBERSHIP, SALES } from './student.mock';
 import { ArtworkDraft, StudentRecords } from './student.models';
@@ -9,13 +9,18 @@ import { isStudentRecords } from './student.validation';
 
 @Injectable({ providedIn: 'root' })
 export class StudentService {
-  readonly api = inject(USE_STUDENT_API) ? inject(StudentApiService) : null;
+  private readonly auth = inject(AuthService);
+  private readonly apiEnabled = inject(USE_STUDENT_API);
+  private readonly localLogin = inject(LOCAL_STUDENT_LOGIN);
+  private readonly remote = this.apiEnabled || this.localLogin ? inject(StudentApiService) : null;
+  get api(): StudentApiService | null {
+    return this.apiEnabled || this.auth.serverStudent?.() ? this.remote : null;
+  }
   readonly loading = computed(() => this.api?.loading() ?? false);
   readonly listingsReady = computed(() => this.api?.catalogueReady() ?? true);
   readonly busy = computed(() => this.api?.busy() ?? false);
   private readonly writeError = signal('');
   private readonly retryVersion = signal(0);
-  private readonly auth = inject(AuthService);
   private readonly storage = inject(StorageService);
   private readonly student = computed(() => {
     const user = this.auth.currentUser();
@@ -92,9 +97,13 @@ export class StudentService {
       result.status === 'invalid' || result.status === 'unreadable');
     return failed ? loadError(failed.result.status, 'student artwork listings') : '';
   });
-  readonly publicListings = computed(() => this.api ? this.api.catalogue() : this.listingLoads().flatMap(({ artist, result }) =>
-    result.status === 'loaded'
-      ? result.value.artworks.map(artwork => ({ ...artwork, artist: artist.name })) : []));
+  readonly publicListings = computed(() => {
+    const remote = this.remote?.catalogue() ?? [];
+    if (this.apiEnabled) return remote;
+    return [...remote, ...this.listingLoads().flatMap(({ artist, result }) =>
+      result.status === 'loaded'
+        ? result.value.artworks.map(artwork => ({ ...artwork, artist: artist.name })) : [])];
+  });
 
   readonly fees = computed(() =>
     this.api ? this.api.current()?.billing.fees ?? [] : !this.recordsAvailable() ? [] : FEES.map((fee) => {

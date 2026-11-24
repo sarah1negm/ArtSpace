@@ -1,6 +1,15 @@
-import { Injectable, computed, inject, signal } from '@angular/core';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { firstValueFrom, timeout } from 'rxjs';
+import { Injectable, InjectionToken, computed, inject, signal } from '@angular/core';
 import { Role, User } from '../models/user.model';
 import { StorageReadResult, StorageService } from './storage.service';
+
+export const LOCAL_STUDENT_LOGIN = new InjectionToken<boolean>('Local Laravel student login', {
+  providedIn: 'root',
+  factory: () => false,
+});
+
+type LocalStudent = Pick<User, 'id' | 'username' | 'name' | 'email'>;
 
 export interface AuthResult {
   ok: boolean;
@@ -14,6 +23,9 @@ const READ_ERROR =
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly storage = inject(StorageService);
+  private readonly http = inject(LOCAL_STUDENT_LOGIN) ? inject(HttpClient) : null;
+  private readonly studentSessionUrl = '/api/local/student-session';
+  readonly serverStudent = signal(false);
   private readonly USERS_KEY = 'artspace_users';
   private readonly SESSION_KEY = 'artspace_session';
   private readonly COOKIE = 'artspace_remember';
@@ -188,8 +200,60 @@ export class AuthService {
       return this.fail('Your account could not be created. Please try again.');
     }
   }
+  async restoreServerStudent(): Promise<void> {
+    if (!this.http) return;
+    try {
+      const { user } = await firstValueFrom(this.http.get<{ user: LocalStudent | null }>(this.studentSessionUrl).pipe(timeout(3000)));
+      if (user) this.setServerStudent(user);
+    } catch {
+      // Laravel may be offline while running the original browser demo.
+    }
+  }
+
+  private setServerStudent(user: LocalStudent): void {
+    this.serverStudent.set(true);
+    this.currentUser.set({
+      ...user, role: 'student', picture: '', passwordHash: '', cardLast4: '',
+      preferences: { theme: 'light', newsletter: false },
+    });
+  }
+
+  private async loginServerStudent(identifier: string, password: string, remember: boolean): Promise<AuthResult> {
+    const http = this.http!;
+    try {
+      await firstValueFrom(http.get(this.studentSessionUrl));
+      const { user } = await firstValueFrom(http.post<{ user: LocalStudent }>(this.studentSessionUrl, { identifier, password }));
+      this.storage.removeSession(this.SESSION_KEY);
+      this.setServerStudent(user);
+      this.rememberUsername(identifier, remember);
+      return { ok: true, error: '' };
+    } catch (error) {
+      if (error instanceof HttpErrorResponse) {
+        if ([401, 422].includes(error.status)) return this.fail('Invalid username or password');
+        if (error.status === 429) return this.fail('Too many attempts. Wait a minute and try again.');
+      }
+      return this.fail('Laravel sign-in is unavailable. Check that the local server is running.');
+    }
+  }
+
+  async logoutServerStudent(): Promise<AuthResult> {
+    try {
+      await firstValueFrom(this.http!.delete(this.studentSessionUrl));
+      this.serverStudent.set(false);
+      this.currentUser.set(null);
+      return { ok: true, error: '' };
+    } catch {
+      return this.fail('Laravel could not end your session. Try again.');
+    }
+  }
+
   async login(username: string, password: string, remember: boolean): Promise<AuthResult> {
     this.storageError.set('');
+    const identifier = username.trim().toLowerCase();
+    if (this.http && /^portal-demo-(one|two)(@example\.test)?$/.test(identifier)) {
+      return this.loginServerStudent(identifier, password, remember);
+    }
+    if (this.serverStudent()) return this.fail('Sign out of the Laravel demo account first.');
     try {
       const passwordHash = await this.hash(password);
       const users = this.getUsers();
@@ -228,6 +292,7 @@ export class AuthService {
     this.storageError.set('');
     const me = this.currentUser();
     if (!me) return this.fail('Please log in before updating your profile.');
+    if (this.serverStudent()) return this.fail('The local demo profile is read-only.');
     const users = this.getUsers();
     if (!users) return this.fail(READ_ERROR, true);
     const stored = users.find((user) => user.id === me.id);

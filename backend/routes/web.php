@@ -1,11 +1,20 @@
 <?php
 
+use App\Http\Controllers\LocalStudentSessionController;
 use App\Http\Controllers\StudentArtworkController;
 use App\Http\Controllers\StudentPortalController;
 use App\Http\Middleware\RequireStudent;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => response()->json(['service' => 'ArtSpace API']));
+
+if (app()->environment('local')) {
+    Route::prefix('api/local/student-session')->middleware('cache.headers:no_store')->group(function () {
+        Route::get('/', [LocalStudentSessionController::class, 'show']);
+        Route::post('/', [LocalStudentSessionController::class, 'login'])->middleware('throttle:8,1');
+        Route::delete('/', [LocalStudentSessionController::class, 'logout']);
+    });
+}
 
 Route::prefix('api')->group(function () {
     Route::get('artworks', [StudentArtworkController::class, 'catalogue']);

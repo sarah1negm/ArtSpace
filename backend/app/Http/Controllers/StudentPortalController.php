@@ -20,7 +20,7 @@ class StudentPortalController extends Controller
         $sales = $this->sales($request);
 
         return [
-            'profile' => $student->only(['name', 'email', 'username']),
+            'profile' => ['id' => (string) $student->id] + $student->only(['name', 'email', 'username']),
             'courses' => StudentCourseEnrollment::where('user_id', $student->id)->orderBy('id')->pluck('name'),
             'membership' => StudioMembership::where('user_id', $student->id)->orderByDesc('expires_on')
                 ->first(['name', 'expires_on'])?->only(['name', 'expires_on']),
