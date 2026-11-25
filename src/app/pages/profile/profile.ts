@@ -59,16 +59,19 @@ export class Profile implements OnDestroy {
     reader.readAsDataURL(file);
   }
 
-  save() {
+  async save() {
     clearTimeout(this.savedTimer);
     this.saved.set(false);
     this.error.set('');
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
     const v = this.form.getRawValue();
-    const result = this.auth.updateProfile({
+    const changes = {
       name: v.name, email: v.email, picture: this.picture(),
       preferences: { theme: v.theme, newsletter: v.newsletter },
-    });
+    };
+    const result = this.auth.sharedLogin
+      ? await this.auth.saveServerProfile(changes)
+      : this.auth.updateProfile(changes);
     if (!result.ok) { this.error.set(result.error); return; }
     this.editing.set(false);
     this.saved.set(true);

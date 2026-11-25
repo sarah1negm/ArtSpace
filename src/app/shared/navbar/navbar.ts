@@ -20,7 +20,7 @@ export class Navbar {
   toggle() { this.menuOpen.update(v => !v); }
   async logout() {
     this.logoutError.set('');
-    const result = this.auth.serverStudent?.() ? await this.auth.logoutServerStudent() : this.auth.logout();
+    const result = this.auth.sharedLogin ? await this.auth.logoutServer() : this.auth.logout();
     if (!result.ok) { this.logoutError.set(result.error); return; }
     this.menuOpen.set(false);
     this.router.navigate(['/']);

@@ -1,7 +1,7 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, InjectionToken, computed, effect, inject, signal, untracked } from '@angular/core';
 import { firstValueFrom, forkJoin } from 'rxjs';
-import { AuthService, LOCAL_STUDENT_LOGIN } from '../../core/services/auth.service';
+import { AuthService } from '../../core/services/auth.service';
 import { Artwork, ArtworkDraft, Fee, Invoice, Sale } from './student.models';
 
 export const USE_STUDENT_API = new InjectionToken<boolean>('Use Laravel student APIs', {
@@ -42,11 +42,10 @@ export type PublicListing = Artwork & { artist: string };
 export class StudentApiService {
   private readonly http = inject(HttpClient);
   private readonly auth = inject(AuthService);
-  private readonly localLogin = inject(LOCAL_STUDENT_LOGIN) && !inject(USE_STUDENT_API);
   private readonly base = '/api/student';
   private readonly studentId = computed(() => {
     const user = this.auth.currentUser();
-    return user?.role === 'student' && (!this.localLogin || this.auth.serverStudent()) ? user.id : null;
+    return user?.role === 'student' ? user.id : null;
   });
   private readonly data = signal<{
     studentId: string;
@@ -96,7 +95,7 @@ export class StudentApiService {
         artworks: this.http.get<Artwork[]>(this.base + '/artworks'),
       }));
       if (request === this.loadRequest && studentId === this.studentId()) {
-        if (this.localLogin && data.dashboard.profile.id !== studentId) {
+        if (this.auth.sharedLogin && data.dashboard.profile.id !== studentId) {
           this.data.set(null);
           this.error.set('The Laravel account changed. Reload the page to restore the current session.');
           return;
