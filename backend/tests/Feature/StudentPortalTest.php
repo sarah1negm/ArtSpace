@@ -37,6 +37,7 @@ class StudentPortalTest extends TestCase
             ->assertOk()->assertJsonPath('profile.name', $student->name)
             ->assertJsonPath('courses', ['Drawing'])
             ->assertJsonPath('membership.name', 'Open Studio')
+            ->assertJsonPath('membership.expiresOn', '2027-01-31')
             ->assertJsonPath('outstanding', 123.45)->assertJsonPath('totalPaid', 0);
     }
 
@@ -70,7 +71,10 @@ class StudentPortalTest extends TestCase
         $other = $this->student();
         $draft = $this->draft();
         $this->actingAs($student);
-        $created = $this->postJson('/api/student/artworks', $draft)->assertCreated();
+        $this->postJson('/api/student/artworks', ['price' => 10000000.01] + $draft)
+            ->assertUnprocessable()->assertJsonValidationErrors('price');
+        $created = $this->postJson('/api/student/artworks', ['price' => 10000000] + $draft)
+            ->assertCreated()->assertJsonPath('price', 10000000);
         $uri = '/api/student/artworks/'.$created->json('id');
         $this->getJson('/api/artworks')->assertJsonPath('0.artist', $student->name);
         $this->actingAs($other)->getJson('/api/student/artworks')->assertExactJson([]);

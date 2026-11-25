@@ -18,12 +18,16 @@ class StudentPortalController extends Controller
         $student = $request->user();
         $fees = $this->fees($request);
         $sales = $this->sales($request);
+        $membership = StudioMembership::where('user_id', $student->id)
+            ->orderByDesc('expires_on')->first(['name', 'expires_on']);
 
         return [
             'profile' => ['id' => (string) $student->id] + $student->only(['name', 'email', 'username']),
             'courses' => StudentCourseEnrollment::where('user_id', $student->id)->orderBy('id')->pluck('name'),
-            'membership' => StudioMembership::where('user_id', $student->id)->orderByDesc('expires_on')
-                ->first(['name', 'expires_on'])?->only(['name', 'expires_on']),
+            'membership' => $membership ? [
+                'name' => $membership->name,
+                'expiresOn' => $membership->expires_on,
+            ] : null,
             'outstanding' => $fees['outstanding'],
             'totalPaid' => round(collect($fees['paymentHistory'])->sum('amount'), 2),
             'earnings' => $sales['earnings'],

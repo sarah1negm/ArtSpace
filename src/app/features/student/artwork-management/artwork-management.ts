@@ -31,14 +31,17 @@ import { StudentService } from '../student.service';
           </select>
         </label>
         <label
-          >Price (EGP) <input type="number" formControlName="price" required min="0.01" step="0.01"
-        /></label>
+          >Price (EGP)
+          <input type="number" formControlName="price" required min="0.01"
+            [max]="maxPrice" step="0.01" aria-describedby="listing-price-limit" />
+          <span id="listing-price-limit">Maximum {{ maxPrice | currency: 'EGP' : 'code' : '1.0-0' }}</span>
+        </label>
         <label
           >Image URL
           <input type="text" inputmode="url" formControlName="imageUrl" placeholder="https://"
         /></label>
         <label>
-          Or choose an image file (JPEG, PNG, WebP or GIF, up to 500 KB)
+          Or choose an image file (JPEG, PNG, WebP or GIF, up to {{ imageLimitLabel }})
           <input
             type="file"
             accept="image/jpeg,image/png,image/webp,image/gif"
@@ -85,6 +88,7 @@ import { StudentService } from '../student.service';
           <p>{{ artwork.category }} · {{ artwork.price | currency: 'EGP' : 'code' }}</p>
           <p>{{ artwork.description }}</p>
           <div class="actions">
+            <a [href]="'/gallery/' + artwork.id">View in Gallery</a>
             <button type="button" (click)="edit(artwork)">Edit</button>
             @if (removingId() === artwork.id) {
               <button type="button" [disabled]="student.busy()" (click)="remove(artwork)">Confirm removal</button>
@@ -103,6 +107,9 @@ import { StudentService } from '../student.service';
 })
 export class ArtworkManagement {
   protected readonly student = inject(StudentService);
+  protected readonly maxPrice = 10_000_000;
+  private readonly imageLimit = this.student.api ? 2 * 1024 * 1024 : 500_000;
+  protected readonly imageLimitLabel = this.student.api ? '2 MB' : '500 KB';
   protected readonly editingId = signal<string | null>(null);
   protected readonly removingId = signal<string | null>(null);
   protected readonly error = signal('');
@@ -115,7 +122,7 @@ export class ArtworkManagement {
     title: ['', [Validators.required, Validators.maxLength(100)]],
     description: ['', [Validators.required, Validators.maxLength(1000)]],
     category: ['Painting' as ArtworkDraft['category'], Validators.required],
-    price: [0, [Validators.required, Validators.min(0.01)]],
+    price: [0, [Validators.required, Validators.min(0.01), Validators.max(this.maxPrice)]],
     imageUrl: [''],
   });
 
@@ -127,10 +134,10 @@ export class ArtworkManagement {
     this.cancelImageRead();
     if (
       !['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(file.type) ||
-      file.size > 500_000 ||
+      file.size > this.imageLimit ||
       file.size === 0
     ) {
-      this.error.set('Choose a JPEG, PNG, WebP or GIF image up to 500 KB.');
+      this.error.set(`Choose a JPEG, PNG, WebP or GIF image up to ${this.imageLimitLabel}.`);
       return;
     }
     if (this.student.api) {
@@ -169,7 +176,13 @@ export class ArtworkManagement {
     this.message.set('');
     if (this.form.invalid) {
       this.form.markAllAsTouched();
-      this.error.set('Enter a title, description, positive price, and an image file or HTTP(S) URL.');
+      this.error.set(this.form.controls.price.hasError('max')
+        ? 'Enter a price of EGP 10,000,000 or less.'
+        : 'Enter a title, description, and positive price.');
+      return;
+    }
+    if (!editingId && !imageUrl && !this.selectedFile) {
+      if (!this.error()) this.error.set('Choose an image file or enter an HTTP(S) image URL.');
       return;
     }
     const id = editingId ?? undefined;
