@@ -1,6 +1,6 @@
 # ArtSpace (ICS 511, Milestone 1)
 
-Angular frontend, mock data only.
+The default Angular demo uses browser-local data. This branch also includes a Laravel-backed Student Portal. See the [Student API setup and endpoint reference](backend/README.md) to run the portal with Laravel and seeded student accounts. Integration with the team's shared login still requires the shared backend's session contract.
 
 ## Run
 npm install
