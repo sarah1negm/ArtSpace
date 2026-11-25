@@ -13,7 +13,7 @@ import { AccountingService } from '../services/accounting.service';
       <button type="button" (click)="acc.retryLoad()">Retry loading accounting records</button>
     } @else {
     <p>
-      ArtSpace keeps a {{ acc.commissionRate * 100 }}% commission on every sale. The rest is paid out to the
+      Queens Art keeps a {{ acc.commissionRate * 100 }}% commission on every sale. The rest is paid out to the
       student who sold the artwork (simulated, no real payment).
     </p>
 

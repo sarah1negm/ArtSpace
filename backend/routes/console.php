@@ -39,4 +39,4 @@ Artisan::command('artspace:create-user {username} {email} {role}', function () {
     $this->info('Account created.');
 
     return 0;
-})->purpose('Create an ArtSpace account with a server-assigned role');
+})->purpose('Create an Queens Art account with a server-assigned role');

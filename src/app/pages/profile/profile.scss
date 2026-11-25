@@ -2,11 +2,11 @@
 .avatar.big { width: 90px; height: 90px; margin: 0; }
 .initials {
   display: flex; align-items: center; justify-content: center; border-radius: 50%;
-  background: #4a3b6b; color: #fff; font-size: 2.2rem; font-weight: 700;
+  background: var(--brand-plum); color: #fff; font-size: 2.2rem; font-weight: 700;
 }
 .badge {
   display: inline-block; padding: .15rem .6rem; border-radius: 999px;
-  background: #e8a33d; color: #1f1b2e; font-size: .8rem; text-transform: capitalize;
+  background: var(--brand-accent); color: var(--brand-deep); font-size: .8rem; text-transform: capitalize;
 }
 dl { display: grid; grid-template-columns: 110px 1fr; gap: .5rem 1rem; }
 dt { font-weight: 600; }

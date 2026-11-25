@@ -1,6 +1,6 @@
-# ArtSpace (ICS 511, Milestone 1)
+# Queens Art (ICS 511, Milestone 1)
 
-ArtSpace uses Angular, shared Laravel sign-in, and a Laravel-backed Student Portal. See the [Laravel setup and API reference](backend/README.md) to run the backend and create accounts.
+Queens Art uses Angular, shared Laravel sign-in, and a Laravel-backed Student Portal. See the [Laravel setup and API reference](backend/README.md) to run the backend and create accounts.
 
 ## Run
 npm install

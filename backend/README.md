@@ -1,4 +1,4 @@
-# ArtSpace student API
+# Queens Art student API
 
 This Laravel application provides the Person 3 API and the student portion of the shared artwork catalogue.
 
@@ -11,7 +11,7 @@ This Laravel application provides the Person 3 API and the student portion of th
 
 ## Shared sign-in
 
-Use the normal ArtSpace login form with a Laravel account's username or email. Signup creates a student account. A developer or deployment operator with server access can provision accountant and admin accounts with a role assigned on the server:
+Use the normal Queens Art login form with a Laravel account's username or email. Signup creates a student account. A developer or deployment operator with server access can provision accountant and admin accounts with a role assigned on the server:
 
 ```bash
 php artisan artspace:create-user alice_accounting alice@example.test accountant
@@ -54,4 +54,4 @@ After generating the local application key, run `php artisan test` from this dir
 
 ## Local demo records
 
-Set `ARTSPACE_DEMO_PASSWORD` in your terminal to a local-only password of at least 12 bytes before running `php artisan db:seed --class=StudentDemoSeeder` from `backend`. This adds student users `portal-demo-one@example.test` and `portal-demo-two@example.test`, course and studio fees, and sale records with paid and pending payouts. Rerunning the seeder preserves existing passwords, invoices, and payments. With Laravel running in its local environment and Angular running through the development proxy, sign in through the normal ArtSpace login form with either seeded demo email or username. The local sign-in creates a Laravel session, restores it on refresh, and enables API-backed Student Portal screens for that session. Use the generated password for those accounts. Sign out from the navbar before switching students. The same shared session endpoints serve these seeded accounts and regular ArtSpace accounts.
+Set `ARTSPACE_DEMO_PASSWORD` in your terminal to a local-only password of at least 12 bytes before running `php artisan db:seed --class=StudentDemoSeeder` from `backend`. This adds student users `portal-demo-one@example.test` and `portal-demo-two@example.test`, course and studio fees, and sale records with paid and pending payouts. Rerunning the seeder preserves existing passwords, invoices, and payments. With Laravel running in its local environment and Angular running through the development proxy, sign in through the normal Queens Art login form with either seeded demo email or username. The local sign-in creates a Laravel session, restores it on refresh, and enables API-backed Student Portal screens for that session. Use the generated password for those accounts. Sign out from the navbar before switching students. The same shared session endpoints serve these seeded accounts and regular Queens Art accounts.

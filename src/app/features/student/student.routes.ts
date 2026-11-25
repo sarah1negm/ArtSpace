@@ -8,28 +8,28 @@ export const STUDENT_ROUTES: Routes = [
       {
         path: '',
         pathMatch: 'full',
-        title: 'Student Dashboard | ArtSpace',
+        title: 'Student Dashboard | Queens Art',
         loadComponent: () => import('./dashboard/dashboard').then((m) => m.Dashboard),
       },
       {
         path: 'fees',
-        title: 'Student Fees | ArtSpace',
+        title: 'Student Fees | Queens Art',
         loadComponent: () => import('./fees/fees').then((m) => m.Fees),
       },
       {
         path: 'invoices',
-        title: 'Invoices | ArtSpace',
+        title: 'Invoices | Queens Art',
         loadComponent: () => import('./invoices/invoices').then((m) => m.Invoices),
       },
       {
         path: 'artwork',
-        title: 'Artwork Listings | ArtSpace',
+        title: 'Artwork Listings | Queens Art',
         loadComponent: () =>
           import('./artwork-management/artwork-management').then((m) => m.ArtworkManagement),
       },
       {
         path: 'sales',
-        title: 'Student Sales | ArtSpace',
+        title: 'Student Sales | Queens Art',
         loadComponent: () => import('./sales/sales').then((m) => m.Sales),
       },
       { path: '**', redirectTo: '' },

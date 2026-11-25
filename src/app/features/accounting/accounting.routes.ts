@@ -8,22 +8,22 @@ export const ACCOUNTING_ROUTES: Routes = [
       {
         path: '',
         pathMatch: 'full',
-        title: 'Accounting Dashboard | ArtSpace',
+        title: 'Accounting Dashboard | Queens Art',
         loadComponent: () => import('./dashboard/dashboard').then((m) => m.Dashboard),
       },
       {
         path: 'payroll',
-        title: 'Staff Payroll | ArtSpace',
+        title: 'Staff Payroll | Queens Art',
         loadComponent: () => import('./payroll/payroll').then((m) => m.Payroll),
       },
       {
         path: 'payouts',
-        title: 'Seller Payouts | ArtSpace',
+        title: 'Seller Payouts | Queens Art',
         loadComponent: () => import('./seller-payouts/seller-payouts').then((m) => m.SellerPayouts),
       },
       {
         path: 'budget',
-        title: 'Department Budget | ArtSpace',
+        title: 'Department Budget | Queens Art',
         loadComponent: () =>
           import('./department-budget/department-budget').then((m) => m.DepartmentBudget),
       },

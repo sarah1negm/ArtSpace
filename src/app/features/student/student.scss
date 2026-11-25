@@ -20,8 +20,8 @@ nav a {
 }
 nav a:hover,
 nav a.active {
-  background: #f5d39c;
-  color: #30200b;
+  background: var(--brand-soft);
+  color: var(--brand-ink);
 }
 h1 {
   margin: 1.5rem 0 1rem;
@@ -87,10 +87,10 @@ textarea {
 button {
   width: fit-content;
   padding: 0.5rem 0.8rem;
-  border: 1px solid #b48137;
+  border: 1px solid var(--brand-border);
   border-radius: 0.4rem;
-  background: #f5d39c;
-  color: #30200b;
+  background: var(--brand-soft);
+  color: var(--brand-ink);
   font: inherit;
   cursor: pointer;
 }
@@ -114,7 +114,7 @@ img {
   display: grid;
   place-items: center;
   aspect-ratio: 4 / 3;
-  background: var(--bg, #f6f4f0);
+  background: var(--bg, #fff5fa);
   border-radius: 0.4rem;
   margin-bottom: 0.5rem;
 }
