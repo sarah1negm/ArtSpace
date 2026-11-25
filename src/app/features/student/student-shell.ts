@@ -21,7 +21,9 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
         <a routerLink="artwork" routerLinkActive="active" ariaCurrentWhenActive="page">Artwork</a>
         <a routerLink="sales" routerLinkActive="active" ariaCurrentWhenActive="page">Sales</a>
       </nav>
-      @if (student.loadStatus() === 'unreadable' || student.loadStatus() === 'invalid') {
+      @if (student.loading()) {
+        <p role="status">Loading student records…</p>
+      } @else if (student.loadStatus() === 'unreadable' || student.loadStatus() === 'invalid') {
         <p role="alert">{{ student.storageError() }}</p>
         <button type="button" (click)="student.retryLoad()">Retry loading student records</button>
       }
