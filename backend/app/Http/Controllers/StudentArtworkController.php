@@ -69,7 +69,7 @@ class StudentArtworkController extends Controller
             'title' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string', 'max:10000'],
             'category' => ['required', Rule::in(['Painting', 'Print', 'Other'])],
-            'price' => ['required', 'numeric', 'decimal:0,2', 'min:0.01', 'max:999999.99'],
+            'price' => ['required', 'numeric', 'decimal:0,2', 'min:0.01', 'max:10000000'],
             'imageUrl' => [$artwork->exists ? 'nullable' : 'required_without:image', 'nullable', 'url:http,https', 'max:2048'],
             'image' => ['nullable', 'file', 'image', 'mimes:jpg,jpeg,png,webp,gif', 'max:2048', 'dimensions:max_width=4096,max_height=4096'],
         ]);
