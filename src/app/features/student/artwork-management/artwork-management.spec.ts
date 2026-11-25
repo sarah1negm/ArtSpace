@@ -65,10 +65,16 @@ describe('Student artwork form', () => {
       fixture.detectChanges();
     };
     click('Edit');
+    expect(document.activeElement).toBe(page.querySelector('[formControlName="title"]'));
+    expect(page.textContent).toContain('Edit listing');
     fill('title', 'Updated upload');
     submit();
     expect(students.artworks().length).toBe(1);
     expect(students.artworks()[0].title).toBe('Updated upload');
+    click('Remove');
+    expect(page.textContent).toContain('Remove this listing from the Gallery?');
+    click('Keep listing');
+    expect(page.textContent).not.toContain('Confirm removal');
     click('Remove');
     expect(students.artworks().length).toBe(1);
     click('Confirm removal');

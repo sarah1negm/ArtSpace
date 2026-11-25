@@ -17,7 +17,7 @@ import { StudentService } from '../student.service';
     <section class="panel">
       <h2>{{ editingId() ? 'Edit listing' : 'Add a listing' }}</h2>
       <form [formGroup]="form" (ngSubmit)="submit()">
-        <label>Title <input formControlName="title" required maxlength="100" /></label>
+        <label>Title <input #listingTitle formControlName="title" required maxlength="100" /></label>
         <label
           >Description
           <textarea formControlName="description" required maxlength="1000" rows="3"></textarea>
@@ -89,14 +89,20 @@ import { StudentService } from '../student.service';
           <p>{{ artwork.description }}</p>
           <div class="actions">
             <a [href]="'/gallery/' + artwork.id">View in Gallery</a>
-            <button type="button" (click)="edit(artwork)">Edit</button>
+            <button type="button" (click)="edit(artwork, listingTitle)">Edit</button>
             @if (removingId() === artwork.id) {
               <button type="button" [disabled]="student.busy()" (click)="remove(artwork)">Confirm removal</button>
-              <button type="button" (click)="removingId.set(null)">Keep listing</button>
+              <button type="button" [disabled]="student.busy()" (click)="confirmRemoval(null)">Keep listing</button>
             } @else {
-              <button type="button" (click)="removingId.set(artwork.id)">Remove</button>
+              <button type="button" [disabled]="student.busy()" (click)="confirmRemoval(artwork.id)">Remove</button>
             }
           </div>
+          @if (removingId() === artwork.id) {
+            <p role="status">Remove this listing from the Gallery?</p>
+            @if (removalError()) {
+              <p role="alert">{{ removalError() }}</p>
+            }
+          }
         </article>
       } @empty {
         <p>No artwork listings yet.</p>
@@ -112,6 +118,7 @@ export class ArtworkManagement {
   protected readonly imageLimitLabel = this.student.api ? '2 MB' : '500 KB';
   protected readonly editingId = signal<string | null>(null);
   protected readonly removingId = signal<string | null>(null);
+  protected readonly removalError = signal('');
   protected readonly error = signal('');
   protected readonly message = signal('');
   protected readonly fileName = signal('');
@@ -197,7 +204,7 @@ export class ArtworkManagement {
     this.message.set(editingId ? 'Listing updated.' : 'Listing added.');
   }
 
-  protected edit(artwork: Artwork): void {
+  protected edit(artwork: Artwork, titleInput: HTMLInputElement): void {
     this.reset();
     this.editingId.set(artwork.id);
     this.form.patchValue(artwork);
@@ -208,6 +215,13 @@ export class ArtworkManagement {
     }
     this.error.set('');
     this.message.set('');
+    titleInput.focus({ preventScroll: true });
+    titleInput.scrollIntoView({ block: 'center' });
+  }
+
+  protected confirmRemoval(id: string | null): void {
+    this.removalError.set('');
+    this.removingId.set(id);
   }
 
   protected reset(): void {
@@ -230,14 +244,15 @@ export class ArtworkManagement {
 
   protected async remove(artwork: Artwork): Promise<void> {
     this.message.set('');
+    this.removalError.set('');
     const removed = this.student.api ? await this.student.api.removeArtwork(artwork.id) : this.student.removeArtwork(artwork.id);
     if (!removed) {
-      this.error.set(this.student.storageError());
+      this.removalError.set(this.student.storageError() || 'The listing could not be removed. Try again.');
       return;
     }
     this.error.set('');
     if (this.editingId() === artwork.id) this.reset();
-    this.removingId.set(null);
+    this.confirmRemoval(null);
     this.message.set('Listing removed.');
   }
 }
