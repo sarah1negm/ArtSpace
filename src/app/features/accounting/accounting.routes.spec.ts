@@ -69,7 +69,7 @@ describe('Accounting portal routes', () => {
         }
         for (const status of statuses) {
           const background = getComputedStyle(status.closest('.panel')!).backgroundColor;
-          expect(background).toBe(theme === 'dark' ? 'rgb(34, 31, 46)' : 'rgb(255, 255, 255)');
+          expect(background).toBe(theme === 'dark' ? 'rgb(48, 33, 50)' : 'rgb(255, 255, 255)');
           // Exercise both profit/loss states even when mock figures all have the same sign.
           for (const sign of ['pos', 'neg']) {
             status.classList.remove('pos', 'neg');

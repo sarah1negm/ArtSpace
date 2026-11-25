@@ -1,5 +1,5 @@
 <form class="auth-card" [formGroup]="form" (ngSubmit)="submit()" novalidate>
-  <h2>Create your ArtSpace account</h2>
+  <h2>Create your Queens Art account</h2>
 
   <label for="username">Username</label>
   <input id="username" type="text" formControlName="username" />
@@ -34,7 +34,7 @@
   <input id="card" type="text" inputmode="numeric" maxlength="16" formControlName="cardNumber" />
   @if (f.cardNumber.touched && f.cardNumber.invalid) { <p class="error">{{ f.cardNumber.hasError('required') ? 'Enter a 16-digit card number for this demo.' : 'Enter exactly 16 digits.' }}</p> }
 
-  <label class="check"><input type="checkbox" formControlName="newsletter" /> Send me ArtSpace news</label>
+  <label class="check"><input type="checkbox" formControlName="newsletter" /> Send me Queens Art news</label>
 
   <label for="theme">Preferred theme</label>
   <select id="theme" formControlName="theme">

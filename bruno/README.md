@@ -1,4 +1,4 @@
-# ArtSpace Local
+# Queens Art Local
 
 In the Bruno sidebar in VS Code, choose **Open Collection**, select this folder, and choose **Local** in the environment dropdown. Use a collection without authenticated cookies for the dashboard smoke test.
 

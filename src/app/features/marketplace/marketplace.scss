@@ -23,8 +23,8 @@ h2 {
   padding: 0.65rem 1.2rem;
   border: 0;
   border-radius: 8px;
-  background: #e8a33d;
-  color: #1f1b2e;
+  background: var(--brand-accent);
+  color: var(--brand-deep);
   font: inherit;
   font-weight: 700;
   cursor: pointer;
@@ -43,7 +43,7 @@ a {
   color: inherit;
 }
 :where(a, button):focus-visible {
-  outline: 3px solid #e8a33d;
+  outline: 3px solid var(--brand-accent);
   outline-offset: 4px;
 }
 @media (width < 600px) {

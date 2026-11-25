@@ -6,7 +6,7 @@ use App\Http\Controllers\StudentPortalController;
 use App\Http\Middleware\RequireStudent;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', fn () => response()->json(['service' => 'ArtSpace API']));
+Route::get('/', fn () => response()->json(['service' => 'Queens Art API']));
 
 Route::prefix('api/auth')->middleware('cache.headers:no_store')->group(function () {
     Route::get('session', [SessionController::class, 'show']);

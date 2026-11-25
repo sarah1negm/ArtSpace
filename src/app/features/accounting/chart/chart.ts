@@ -3,7 +3,7 @@ import { Chart, ChartConfiguration, ChartType, registerables } from 'chart.js';
 
 Chart.register(...registerables);
 
-export const CHART_COLORS = ['#e8a33d', '#3d7be8', '#3dbf8a', '#c0554d', '#8e5be8', '#5fb4c9', '#b0a04b'];
+export const CHART_COLORS = ['#b63d77', '#6d55a7', '#25806b', '#ac5347', '#9061ba', '#3a789b', '#8b702d'];
 
 /** Small reusable wrapper around Chart.js. Re-draws whenever its inputs change. */
 @Component({

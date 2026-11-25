@@ -1,10 +1,27 @@
-:root { --bg: #f6f4f0; --text: #222; --card: #fff; }
-[data-theme='dark'] { --bg: #14121c; --text: #eee; --card: #221f2e; }
+:root {
+  --brand-deep: #391d39;
+  --brand-plum: #654177;
+  --brand-ink: #42203d;
+  --brand-accent: #f5afd0;
+  --brand-soft: #f4dcef;
+  --brand-border: #a15b8a;
+  --bg: #fff5fa;
+  --text: #352437;
+  --card: #fff;
+  --card-border: #eed8e8;
+  --heading-font: Georgia, 'Times New Roman', serif;
+}
+[data-theme='dark'] {
+  --bg: #211521;
+  --text: #f9eaf6;
+  --card: #302132;
+  --card-border: #66445f;
+}
 body { margin: 0; background: var(--bg); color: var(--text); font-family: system-ui, sans-serif; }
+h1, h2 { font-family: var(--heading-font); }
 input, select { background: transparent; color: inherit; }
 
 .auth-card {
-  // Auth-only tokens keep other feature styles unchanged.
   --auth-field-bg: var(--card);
   --auth-border: #767676;
   --auth-placeholder: #595959;
@@ -12,8 +29,8 @@ input, select { background: transparent; color: inherit; }
   --auth-error: #a42622;
   --auth-success: #176b3a;
   --auth-focus: #6b4c9a;
-  --auth-button-bg: #e8a33d;
-  --auth-button-text: #1f1b2e;
+  --auth-button-bg: var(--brand-accent);
+  --auth-button-text: var(--brand-deep);
   --auth-disabled-bg: #e4e0e8;
   --auth-disabled-text: #595360;
   color-scheme: light;
@@ -77,7 +94,7 @@ input, select { background: transparent; color: inherit; }
   --auth-link: #d7bbff;
   --auth-error: #ffb4ab;
   --auth-success: #8ee3ad;
-  --auth-focus: #f3be63;
+  --auth-focus: #f8afd7;
   --auth-disabled-bg: #3c3749;
   --auth-disabled-text: #c9c3d5;
   color-scheme: dark;

@@ -18,7 +18,7 @@ import { StudentService } from '../student.service';
             <th>Artwork</th>
             <th>Sold on</th>
             <th>Sale price</th>
-            <th>ArtSpace commission</th>
+            <th>Queens Art commission</th>
             <th>Earnings</th>
             <th>Payout</th>
           </tr>

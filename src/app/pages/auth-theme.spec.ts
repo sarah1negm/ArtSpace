@@ -60,7 +60,7 @@ describe('Authentication page theme contrast', () => {
         const root: HTMLElement = fixture.nativeElement;
         const card = root.querySelector<HTMLElement>('.auth-card')!;
         const background = getComputedStyle(card).backgroundColor;
-        expect(background).toBe(theme === 'dark' ? 'rgb(34, 31, 46)' : 'rgb(255, 255, 255)');
+        expect(background).toBe(theme === 'dark' ? 'rgb(48, 33, 50)' : 'rgb(255, 255, 255)');
         readable(card, background, `${page} card text`);
         for (const link of root.querySelectorAll('a, .link-btn'))
           readable(link, background, `${page} link`);
