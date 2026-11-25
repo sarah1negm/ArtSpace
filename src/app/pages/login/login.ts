@@ -15,6 +15,7 @@ export class Login {
   private auth = inject(AuthService);
   private router = inject(Router);
   private storage = inject(StorageService);
+  readonly identifierLabel = this.auth.sharedLogin ? 'Username or email' : 'Username';
   readonly submitting = signal(false);
 
   error = signal('');

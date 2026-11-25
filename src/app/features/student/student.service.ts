@@ -1,5 +1,5 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { AuthService, LOCAL_STUDENT_LOGIN } from '../../core/services/auth.service';
+import { AuthService } from '../../core/services/auth.service';
 import { StorageService, StoredData } from '../../core/services/storage.service';
 import { COURSES, FEES, INITIAL_RECORDS, MEMBERSHIP, SALES } from './student.mock';
 import { ArtworkDraft, StudentRecords } from './student.models';
@@ -11,10 +11,9 @@ import { isStudentRecords } from './student.validation';
 export class StudentService {
   private readonly auth = inject(AuthService);
   private readonly apiEnabled = inject(USE_STUDENT_API);
-  private readonly localLogin = inject(LOCAL_STUDENT_LOGIN);
-  private readonly remote = this.apiEnabled || this.localLogin ? inject(StudentApiService) : null;
+  private readonly remote = this.apiEnabled ? inject(StudentApiService) : null;
   get api(): StudentApiService | null {
-    return this.apiEnabled || this.auth.serverStudent?.() ? this.remote : null;
+    return this.remote;
   }
   readonly loading = computed(() => this.api?.loading() ?? false);
   readonly listingsReady = computed(() => this.api?.catalogueReady() ?? true);

@@ -1,8 +1,8 @@
 <form class="auth-card" [formGroup]="form" (ngSubmit)="submit()" novalidate>
   <h2>Welcome back</h2>
-  <label for="username">Username</label>
+  <label for="username">{{ identifierLabel }}</label>
   <input id="username" type="text" autocomplete="username" formControlName="username" aria-describedby="username-error" [attr.aria-invalid]="form.controls.username.touched && form.controls.username.invalid ? 'true' : null" />
-  @if (form.controls.username.touched && form.controls.username.invalid) { <p id="username-error" class="error">Enter your username.</p> }
+  @if (form.controls.username.touched && form.controls.username.invalid) { <p id="username-error" class="error">Enter your {{ identifierLabel.toLowerCase() }}.</p> }
   <label for="password">Password</label>
   <input id="password" type="password" autocomplete="current-password" formControlName="password" aria-describedby="password-error" [attr.aria-invalid]="form.controls.password.touched && form.controls.password.invalid ? 'true' : null" />
   @if (form.controls.password.touched && form.controls.password.invalid) { <p id="password-error" class="error">Enter your password.</p> }

@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\LocalStudentSessionController;
+use App\Http\Controllers\SessionController;
 use App\Http\Controllers\StudentArtworkController;
 use App\Http\Controllers\StudentPortalController;
 use App\Http\Middleware\RequireStudent;
@@ -8,13 +8,13 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => response()->json(['service' => 'ArtSpace API']));
 
-if (app()->environment('local')) {
-    Route::prefix('api/local/student-session')->middleware('cache.headers:no_store')->group(function () {
-        Route::get('/', [LocalStudentSessionController::class, 'show']);
-        Route::post('/', [LocalStudentSessionController::class, 'login'])->middleware('throttle:8,1');
-        Route::delete('/', [LocalStudentSessionController::class, 'logout']);
-    });
-}
+Route::prefix('api/auth')->middleware('cache.headers:no_store')->group(function () {
+    Route::get('session', [SessionController::class, 'show']);
+    Route::post('session', [SessionController::class, 'login'])->middleware('throttle:8,1');
+    Route::delete('session', [SessionController::class, 'logout']);
+    Route::post('register', [SessionController::class, 'register'])->middleware('throttle:8,1');
+    Route::patch('profile', [SessionController::class, 'updateProfile'])->middleware('auth:web');
+});
 
 Route::prefix('api')->group(function () {
     Route::get('artworks', [StudentArtworkController::class, 'catalogue']);

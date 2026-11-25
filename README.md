@@ -1,13 +1,13 @@
 # ArtSpace (ICS 511, Milestone 1)
 
-The default Angular demo uses browser-local data. This branch also includes a Laravel-backed Student Portal. See the [Student API setup and endpoint reference](backend/README.md) to run the portal with Laravel and seeded student accounts. Integration with the team's shared login still requires the shared backend's session contract.
+ArtSpace uses Angular, shared Laravel sign-in, and a Laravel-backed Student Portal. See the [Laravel setup and API reference](backend/README.md) to run the backend and create accounts.
 
 ## Run
 npm install
 ng serve        # http://localhost:4200
 ng test --watch=false --browsers=ChromeHeadless
 
-## Test accounts (password: Pass1234)
+## Local accounts
 student1 Â· accountant1 Â· admin1
 
 ## Rules
@@ -23,7 +23,7 @@ student1 Â· accountant1 Â· admin1
 - One branch per person, pull request to master
 ## Student listings and Marketplace
 
-Student-created listings share the reactive `ArtworkCatalog` used by Gallery,
+In the browser-only demo mode, student-created listings share the reactive `ArtworkCatalog` used by Gallery,
 Details and Cart. Student IDs are UUID strings; the three mock artwork IDs remain
 numbers. New listings start with zero popularity. Editing a listing updates its
 Marketplace information and cart price; deleting it removes it from Gallery,

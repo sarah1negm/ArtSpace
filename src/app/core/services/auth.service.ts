@@ -4,12 +4,12 @@ import { Injectable, InjectionToken, computed, inject, signal } from '@angular/c
 import { Role, User } from '../models/user.model';
 import { StorageReadResult, StorageService } from './storage.service';
 
-export const LOCAL_STUDENT_LOGIN = new InjectionToken<boolean>('Local Laravel student login', {
+export const USE_SHARED_LOGIN = new InjectionToken<boolean>('Shared Laravel login', {
   providedIn: 'root',
   factory: () => false,
 });
 
-type LocalStudent = Pick<User, 'id' | 'username' | 'name' | 'email'>;
+type ServerUser = Omit<User, 'passwordHash'>;
 
 export interface AuthResult {
   ok: boolean;
@@ -23,15 +23,15 @@ const READ_ERROR =
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly storage = inject(StorageService);
-  private readonly http = inject(LOCAL_STUDENT_LOGIN) ? inject(HttpClient) : null;
-  private readonly studentSessionUrl = '/api/local/student-session';
-  readonly serverStudent = signal(false);
+  private readonly http = inject(USE_SHARED_LOGIN) ? inject(HttpClient) : null;
+  private readonly sessionUrl = '/api/auth/session';
+  readonly sharedLogin = this.http !== null;
   private readonly USERS_KEY = 'artspace_users';
   private readonly SESSION_KEY = 'artspace_session';
   private readonly COOKIE = 'artspace_remember';
   private readonly usersRevision = signal(0);
   readonly storageError = signal('');
-  readonly currentUser = signal<User | null>(this.loadSession());
+  readonly currentUser = signal<User | null>(this.sharedLogin ? null : this.loadSession());
   readonly isLoggedIn = computed(() => this.currentUser() !== null);
   readonly role = computed(() => this.currentUser()?.role ?? null);
 
@@ -117,6 +117,7 @@ export class AuthService {
     }
   }
   async seedDemoUsers(): Promise<boolean> {
+    if (this.sharedLogin) return true;
     const users = this.getUsers();
     if (!users) {
       this.fail(READ_ERROR, true);
@@ -171,6 +172,12 @@ export class AuthService {
     theme: 'light' | 'dark';
   }): Promise<AuthResult> {
     this.storageError.set('');
+    if (this.http) {
+      const { cardNumber, theme, newsletter, ...account } = data;
+      return this.writeAccount('POST', '/api/auth/register', {
+        ...account, cardLast4: cardNumber.slice(-4), preferences: { theme, newsletter },
+      });
+    }
     try {
       const passwordHash = await this.hash(data.password);
       const users = this.getUsers();
@@ -200,60 +207,80 @@ export class AuthService {
       return this.fail('Your account could not be created. Please try again.');
     }
   }
-  async restoreServerStudent(): Promise<void> {
+  async restoreSession(): Promise<void> {
     if (!this.http) return;
     try {
-      const { user } = await firstValueFrom(this.http.get<{ user: LocalStudent | null }>(this.studentSessionUrl).pipe(timeout(3000)));
-      if (user) this.setServerStudent(user);
+      const { user } = await firstValueFrom(
+        this.http.get<{ user: ServerUser | null }>(this.sessionUrl).pipe(timeout(5000)),
+      );
+      this.setServerUser(user);
     } catch {
-      // Laravel may be offline while running the original browser demo.
+      this.currentUser.set(null);
     }
   }
 
-  private setServerStudent(user: LocalStudent): void {
-    this.serverStudent.set(true);
-    this.currentUser.set({
-      ...user, role: 'student', picture: '', passwordHash: '', cardLast4: '',
-      preferences: { theme: 'light', newsletter: false },
-    });
+  private setServerUser(user: ServerUser | null): void {
+    this.currentUser.set(user ? { ...user, passwordHash: '' } : null);
   }
 
-  private async loginServerStudent(identifier: string, password: string, remember: boolean): Promise<AuthResult> {
+  private async writeAccount(method: 'POST' | 'PATCH', url: string, body: object): Promise<AuthResult> {
     const http = this.http!;
+    const currentUser = this.currentUser();
     try {
-      await firstValueFrom(http.get(this.studentSessionUrl));
-      const { user } = await firstValueFrom(http.post<{ user: LocalStudent }>(this.studentSessionUrl, { identifier, password }));
-      this.storage.removeSession(this.SESSION_KEY);
-      this.setServerStudent(user);
-      this.rememberUsername(identifier, remember);
+      await firstValueFrom(http.get(this.sessionUrl).pipe(timeout(10000)));
+      const result = await firstValueFrom(
+        http.request<{ user: ServerUser } | null>(method, url, { body }).pipe(timeout(10000)),
+      );
+      if (result?.user && currentUser === this.currentUser()) this.setServerUser(result.user);
       return { ok: true, error: '' };
     } catch (error) {
       if (error instanceof HttpErrorResponse) {
-        if ([401, 422].includes(error.status)) return this.fail('Invalid username or password');
+        if (error.status === 401) return this.fail('Please sign in again.');
+        if (error.status === 422) return this.fail(error.error?.message ?? 'Check your account details.');
         if (error.status === 429) return this.fail('Too many attempts. Wait a minute and try again.');
       }
-      return this.fail('Laravel sign-in is unavailable. Check that the local server is running.');
+      return this.fail('Account service is unavailable. Try again.');
     }
   }
 
-  async logoutServerStudent(): Promise<AuthResult> {
+  saveServerProfile(changes: Partial<Pick<User, 'name' | 'email' | 'picture' | 'preferences'>>): Promise<AuthResult> {
+    return this.writeAccount('PATCH', '/api/auth/profile', changes);
+  }
+
+  private async loginServer(identifier: string, password: string, remember: boolean): Promise<AuthResult> {
+    const http = this.http!;
     try {
-      await firstValueFrom(this.http!.delete(this.studentSessionUrl));
-      this.serverStudent.set(false);
+      await firstValueFrom(http.get(this.sessionUrl).pipe(timeout(10000)));
+      const { user } = await firstValueFrom(
+        http.post<{ user: ServerUser }>(this.sessionUrl, { identifier, password }).pipe(timeout(10000)),
+      );
+      this.setServerUser(user);
+      this.rememberUsername(user.username || identifier, remember);
+      return { ok: true, error: '' };
+    } catch (error) {
+      if (error instanceof HttpErrorResponse) {
+        if ([401, 422].includes(error.status)) return this.fail('Invalid username, email or password');
+        if (error.status === 429) return this.fail('Too many attempts. Wait a minute and try again.');
+      }
+      return this.fail('Sign-in is unavailable. Check the server and try again.');
+    }
+  }
+
+  async logoutServer(): Promise<AuthResult> {
+    try {
+      const http = this.http!;
+      await firstValueFrom(http.get(this.sessionUrl).pipe(timeout(10000)));
+      await firstValueFrom(http.delete(this.sessionUrl).pipe(timeout(10000)));
       this.currentUser.set(null);
       return { ok: true, error: '' };
     } catch {
-      return this.fail('Laravel could not end your session. Try again.');
+      return this.fail('The server could not end your session. Try again.');
     }
   }
 
   async login(username: string, password: string, remember: boolean): Promise<AuthResult> {
     this.storageError.set('');
-    const identifier = username.trim().toLowerCase();
-    if (this.http && /^portal-demo-(one|two)(@example\.test)?$/.test(identifier)) {
-      return this.loginServerStudent(identifier, password, remember);
-    }
-    if (this.serverStudent()) return this.fail('Sign out of the Laravel demo account first.');
+    if (this.http) return this.loginServer(username.trim(), password, remember);
     try {
       const passwordHash = await this.hash(password);
       const users = this.getUsers();
@@ -292,7 +319,6 @@ export class AuthService {
     this.storageError.set('');
     const me = this.currentUser();
     if (!me) return this.fail('Please log in before updating your profile.');
-    if (this.serverStudent()) return this.fail('The local demo profile is read-only.');
     const users = this.getUsers();
     if (!users) return this.fail(READ_ERROR, true);
     const stored = users.find((user) => user.id === me.id);

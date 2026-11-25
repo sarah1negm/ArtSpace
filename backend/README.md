@@ -7,9 +7,26 @@ This Laravel application provides the Person 3 API and the student portion of th
 1. Run `composer install` in `backend` with PHP 8.4 and the PDO MySQL and SQLite extensions.
 2. Copy `.env.example` to `.env`. Set the database connection to a new MySQL database and supply its credentials.
 3. Run `php artisan key:generate`, `php artisan migrate`, and `php artisan serve`.
-4. From the Angular project root, run `npm ci` and `npm start -- --proxy-config proxy.conf.json`. In deployment, serve Angular and forward `/api/*` to Laravel on the same origin.
+4. From the Angular project root, run `npm ci` and `npm start`. In deployment, serve Angular and forward `/api/*` to Laravel on the same origin.
 
-For regular ArtSpace accounts, Angular API mode needs the team's shared server-backed login. Once that login sets the Laravel `web` session, returns the authenticated identity to Angular's `AuthService`, and clears both sessions on logout, provide `{ provide: USE_STUDENT_API, useValue: true }` in `src/app/app.config.ts`. The Angular client uses relative URLs and Angular's standard `XSRF-TOKEN` cookie and `X-XSRF-TOKEN` header. The existing browser-only demo login does not issue a Laravel session.
+## Shared sign-in
+
+Use the normal ArtSpace login form with a Laravel account's username or email. Signup creates a student account. A developer or deployment operator with server access can provision accountant and admin accounts with a role assigned on the server:
+
+```bash
+php artisan artspace:create-user alice_accounting alice@example.test accountant
+php artisan artspace:create-user artspace_admin admin@example.test admin
+```
+
+The command prompts for a password. Each teammate can choose a separate password in their local environment. Existing browser-only accounts and records are not imported into Laravel.
+
+- `GET /api/auth/session` returns `{ user: null }` for a guest or `{ user: { id, username, name, email, role, picture, cardLast4, preferences } }`.
+- `POST /api/auth/session` accepts `identifier` and `password`, creates the Laravel session, and returns the same user envelope.
+- `DELETE /api/auth/session` invalidates the session and returns 204.
+- `POST /api/auth/register` creates a student from `username`, `name`, `email`, `password`, optional `picture` and `cardLast4`, and `preferences` containing `theme` and `newsletter`.
+- Authenticated `PATCH /api/auth/profile` accepts `name`, `email`, optional `picture`, and `preferences`. It returns the updated user envelope.
+
+Angular uses relative URLs, the Laravel session cookie, and the standard `XSRF-TOKEN` cookie and `X-XSRF-TOKEN` header. Fetch the session before issuing writes to initialize the CSRF cookie. Protect each feature's private Laravel routes with session authentication and its server-side role check.
 
 ## Endpoints
 
@@ -29,7 +46,7 @@ Student routes require an authenticated Laravel session and a student role. Reco
 
 MySQL is the source of truth for users, server sessions, enrollment, membership, fees, invoices, invoice payments, artworks, and sales. Money is stored as integer piasters and returned in EGP. Uploaded files are stored on Laravel's local disk with generated names. The database stores their paths. Soft-deleted artwork stays available to financial references. Replaced and removed files remain on disk for potential cleanup and are unavailable at their former image URLs.
 
-Laravel uses an HttpOnly session cookie to identify the server session and a separate readable CSRF cookie so Angular can send the CSRF header. Use HTTPS with secure session cookies in production. API-backed student records stay in Angular memory and private views clear when its signed-in student changes. The browser session, optional username and consent cookies, and localStorage data used by the Milestone 1 demo remain in its existing flows. LocalStorage also retains the existing cart and Accounting demo data. A production cutover needs the authentication migration and an explicit decision about importing browser-side demo records.
+Laravel uses an HttpOnly session cookie and a separate readable CSRF cookie. Use HTTPS with secure session cookies in production. API-backed student records stay in Angular memory and private views clear when the signed-in student changes. The cart and Accounting demo data still use browser storage.
 
 ## Tests
 
@@ -37,4 +54,4 @@ After generating the local application key, run `php artisan test` from this dir
 
 ## Local demo records
 
-Set `ARTSPACE_DEMO_PASSWORD` in your terminal to a local-only password of at least 12 bytes before running `php artisan db:seed --class=StudentDemoSeeder` from `backend`. This adds student users `portal-demo-one@example.test` and `portal-demo-two@example.test`, course and studio fees, and sale records with paid and pending payouts. Rerunning the seeder preserves existing passwords, invoices, and payments. With Laravel running in its local environment and Angular running through the development proxy, sign in through the normal ArtSpace login form with either seeded demo email or username. The local sign-in creates a Laravel session, restores it on refresh, and enables API-backed Student Portal screens for that session. Use the generated password for those accounts. Sign out from the navbar before switching students. The local session routes are only registered in Laravel's local environment, and the demo adapter is only enabled in Angular development builds. The regular ArtSpace accounts continue to use the existing login until shared authentication is integrated.
+Set `ARTSPACE_DEMO_PASSWORD` in your terminal to a local-only password of at least 12 bytes before running `php artisan db:seed --class=StudentDemoSeeder` from `backend`. This adds student users `portal-demo-one@example.test` and `portal-demo-two@example.test`, course and studio fees, and sale records with paid and pending payouts. Rerunning the seeder preserves existing passwords, invoices, and payments. With Laravel running in its local environment and Angular running through the development proxy, sign in through the normal ArtSpace login form with either seeded demo email or username. The local sign-in creates a Laravel session, restores it on refresh, and enables API-backed Student Portal screens for that session. Use the generated password for those accounts. Sign out from the navbar before switching students. The same shared session endpoints serve these seeded accounts and regular ArtSpace accounts.
