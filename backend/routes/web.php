@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\SessionController;
+use App\Http\Controllers\MarketplaceController;
 use App\Http\Controllers\StudentArtworkController;
 use App\Http\Controllers\StudentPortalController;
 use App\Http\Middleware\RequireStudent;
@@ -17,6 +18,15 @@ Route::prefix('api/auth')->middleware('cache.headers:no_store')->group(function 
 });
 
 Route::prefix('api')->group(function () {
+    Route::prefix('cart')->middleware('cache.headers:no_store')->group(function () {
+        Route::get('/', [MarketplaceController::class, 'show']);
+        Route::post('items', [MarketplaceController::class, 'add']);
+        Route::patch('items/{id}', [MarketplaceController::class, 'update'])->whereUuid('id');
+        Route::delete('items/{id}', [MarketplaceController::class, 'remove'])->whereUuid('id');
+        Route::delete('/', [MarketplaceController::class, 'clear']);
+        Route::post('checkout', [MarketplaceController::class, 'checkout'])
+            ->middleware(['auth:web', 'throttle:20,1']);
+    });
     Route::get('artworks', [StudentArtworkController::class, 'catalogue']);
     Route::get('artwork-images/{filename}', [StudentArtworkController::class, 'image'])
         ->where('filename', '[A-Za-z0-9]+\.(jpg|jpeg|png|webp|gif)');

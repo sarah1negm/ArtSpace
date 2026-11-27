@@ -3,6 +3,7 @@ import { Injectable, InjectionToken, computed, effect, inject, signal, untracked
 import { firstValueFrom, forkJoin } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { Artwork, ArtworkDraft, Fee, Invoice, Sale } from './student.models';
+import { MarketplaceMonitoring } from '../../core/services/marketplace-monitoring';
 
 export const USE_STUDENT_API = new InjectionToken<boolean>('Use Laravel student APIs', {
   providedIn: 'root',
@@ -41,6 +42,7 @@ export type PublicListing = Artwork & { artist: string };
 @Injectable({ providedIn: 'root' })
 export class StudentApiService {
   private readonly http = inject(HttpClient);
+  private readonly monitoring = inject(MarketplaceMonitoring);
   private readonly auth = inject(AuthService);
   private readonly base = '/api/student';
   private readonly studentId = computed(() => {
@@ -111,14 +113,17 @@ export class StudentApiService {
 
   async loadCatalogue(): Promise<void> {
     const request = ++this.catalogueRequest;
+    const started = performance.now();
     this.catalogueError.set('');
     try {
       const listings = await firstValueFrom(this.http.get<PublicListing[]>('/api/artworks'));
+      this.monitoring.measure('marketplace_catalogue_ms', started, true);
       if (request === this.catalogueRequest) {
         this.catalogue.set(listings);
         this.catalogueReady.set(true);
       }
     } catch {
+      this.monitoring.measure('marketplace_catalogue_ms', started, false);
       if (request === this.catalogueRequest)
         this.catalogueError.set('Student artwork listings could not be loaded.');
     }

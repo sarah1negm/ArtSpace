@@ -2,6 +2,10 @@
 
 Queens Art uses Angular, shared Laravel sign-in, and a Laravel-backed Student Portal. See the [Laravel setup and API reference](backend/README.md) to run the backend and create accounts.
 
+Milestone 2 Marketplace now uses the public Laravel catalogue, a server-session cart and authenticated
+simulated checkout. See [Person 2 setup, APIs, tests and demo](docs/marketplace-milestone-2.md).
+The browser-only storage notes below describe the retained Milestone 1 demo mode, not the live Marketplace.
+
 ## Run
 npm install
 ng serve        # http://localhost:4200

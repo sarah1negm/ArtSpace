@@ -5,6 +5,8 @@ import { provideHttpClient } from '@angular/common/http';
 import { AuthService, USE_SHARED_LOGIN } from './core/services/auth.service';
 import { USE_STUDENT_API } from './features/student/student-api.service';
 import { routes } from './app.routes';
+import { USE_MARKETPLACE_API } from './features/marketplace/marketplace-api.service';
+import { MarketplaceMonitoring } from './core/services/marketplace-monitoring';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -12,7 +14,9 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(),
     { provide: USE_SHARED_LOGIN, useValue: true },
     { provide: USE_STUDENT_API, useValue: true },
+    { provide: USE_MARKETPLACE_API, useValue: true },
     provideAppInitializer(() => inject(AuthService).restoreSession()),
+    provideAppInitializer(() => { void inject(MarketplaceMonitoring).initialize(); }),
     provideRouter(routes)
   ]
 };

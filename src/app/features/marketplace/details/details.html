@@ -6,7 +6,9 @@
   <header class="page-header">
     <a routerLink="/gallery">Back to gallery</a><a routerLink="/gallery/cart">View cart</a>
   </header>
-  @if (artwork(); as item) {
+  @if (listings.loading()) {
+    <p role="status">Loading artwork details...</p>
+  } @else if (artwork(); as item) {
     <article class="details">
       <img [src]="item.image" [alt]="item.title" width="800" height="600" />
       <div>
