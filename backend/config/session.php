@@ -20,6 +20,12 @@ return [
 
     'driver' => env('SESSION_DRIVER', 'database'),
 
+    // Every request that reads/saves a session must take the same lock. Locking
+    // only cart routes lets a parallel catalogue/auth request save stale state.
+    'block' => true,
+    'block_lock_seconds' => 120,
+    'block_wait_seconds' => 15,
+
     /*
     |--------------------------------------------------------------------------
     | Session Lifetime

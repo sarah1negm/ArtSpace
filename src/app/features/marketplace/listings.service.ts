@@ -1,9 +1,12 @@
 import { computed, inject, Injectable } from '@angular/core';
 import { StudentService } from '../student/student.service';
 import { ARTWORKS, Artwork } from './artworks';
+import { USE_MARKETPLACE_API } from './marketplace-api.service';
 
 @Injectable({ providedIn: 'root' })
 export class ListingsService {
+  private readonly server = inject(USE_MARKETPLACE_API);
+  readonly loading = computed(() => this.server && !this.students.listingsReady() && !this.storageError());
   private readonly students = inject(StudentService);
   readonly storageError = this.students.listingsError;
   retryLoad(): void { this.students.retryLoad(); }
@@ -19,5 +22,5 @@ export class ListingsService {
       popularity: 0,
     })),
   );
-  readonly all = computed(() => [...this.studentListings(), ...ARTWORKS]);
+  readonly all = computed(() => this.server ? this.studentListings() : [...this.studentListings(), ...ARTWORKS]);
 }

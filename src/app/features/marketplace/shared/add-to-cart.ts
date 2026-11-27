@@ -4,8 +4,8 @@ import { CartService } from '../cart';
 
 @Component({
   selector: 'app-add-to-cart',
-  template: `<button type="button" [class.added]="added()" [disabled]="atLimit()" (click)="add()">
-      {{ atLimit() ? 'Quantity limit reached' : added() ? 'Added to Cart' : 'Add to Cart' }}
+  template: `<button type="button" [class.added]="added()" [disabled]="atLimit() || pending() || cart.busy() || cart.checkoutPending() || cart.loading() || !!cart.readError()" (click)="add()">
+      {{ pending() ? 'Adding...' : atLimit() ? 'Quantity limit reached' : added() ? 'Added to Cart' : 'Add to Cart' }}
     </button>
     @if (error()) { <p role="alert">{{ error() }}</p> }
     <span class="status" role="status">{{
@@ -55,17 +55,24 @@ export class AddToCart implements OnDestroy {
   readonly artwork = input.required<Artwork>();
   readonly added = signal(false);
   readonly error = signal('');
-  private readonly cart = inject(CartService);
+  readonly cart = inject(CartService);
+  readonly pending = signal(false);
   readonly atLimit = computed(
-    () => this.cart.items().filter((item) => item.id === this.artwork().id).length >= 99,
+    () => this.cart.items().filter((item) => item.id === this.artwork().id).length >= this.cart.maxQuantity,
   );
   private timer?: ReturnType<typeof setTimeout>;
-  add(): void {
-    if (this.atLimit()) return;
+  private destroyed = false;
+  async add(): Promise<void> {
+    if (this.atLimit() || this.pending() || this.cart.busy()) return;
     clearTimeout(this.timer);
     this.added.set(false);
     this.error.set('');
-    if (!this.cart.addToCart(this.artwork())) {
+    this.pending.set(true);
+    const result = this.cart.addToCart(this.artwork());
+    const success = typeof result === 'boolean' ? result : await result;
+    if (this.destroyed) return;
+    this.pending.set(false);
+    if (!success) {
       this.error.set(this.cart.storageError());
       return;
     }
@@ -74,6 +81,7 @@ export class AddToCart implements OnDestroy {
     this.timer = setTimeout(() => this.added.set(false), 1400);
   }
   ngOnDestroy(): void {
+    this.destroyed = true;
     clearTimeout(this.timer);
   }
 }

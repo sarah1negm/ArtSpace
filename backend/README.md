@@ -46,7 +46,18 @@ Student routes require an authenticated Laravel session and a student role. Reco
 
 MySQL is the source of truth for users, server sessions, enrollment, membership, fees, invoices, invoice payments, artworks, and sales. Money is stored as integer piasters and returned in EGP. Uploaded files are stored on Laravel's local disk with generated names. The database stores their paths. Soft-deleted artwork stays available to financial references. Replaced and removed files remain on disk for potential cleanup and are unavailable at their former image URLs.
 
-Laravel uses an HttpOnly session cookie and a separate readable CSRF cookie. Use HTTPS with secure session cookies in production. API-backed student records stay in Angular memory and private views clear when the signed-in student changes. The cart and Accounting demo data still use browser storage.
+Laravel uses an HttpOnly session cookie and a separate readable CSRF cookie. Use HTTPS with secure session cookies in production. API-backed student records stay in Angular memory and private views clear when the signed-in student changes. Marketplace now uses a Laravel session cart; Accounting demo data still uses browser storage.
+
+## Marketplace
+
+See [Person 2 Marketplace documentation](../docs/marketplace-milestone-2.md) for session-cart endpoints,
+transactional simulated checkout, local fixtures, concurrency tests, monitoring and manual demo steps.
+Checkout writes the existing artwork_sales contract without changing its schema; seller payouts remain pending.
+Keep `SESSION_DRIVER=database` and `SESSION_CONNECTION` unset (or equal to the default DB connection).
+Sales and session receipts commit together on that connection; MySQL tables must use InnoDB.
+Shared session locking is enabled for all web routes to prevent stale parallel requests overwriting cart/auth state.
+Use the database cache store locally, or another shared atomic lock store in deployment. See the Marketplace
+document for portable fresh-clone commands and the Person 4 financial integration contract.
 
 ## Tests
 

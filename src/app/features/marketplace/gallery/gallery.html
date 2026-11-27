@@ -1,4 +1,5 @@
 <section class="marketplace">
+  @if (listings.loading()) { <p role="status">Loading artworks...</p> }
   @if (listings.storageError()) {
     <p role="alert">{{ listings.storageError() }}</p>
     <button type="button" class="button secondary" (click)="listings.retryLoad()">Retry loading artworks</button>
@@ -9,10 +10,10 @@
       <p>Explore and purchase artwork created by our students.</p>
     </div>
     <a class="button secondary" routerLink="/gallery/cart"
-      >Cart ({{ cartService.readError() ? 'Unavailable' : cartService.items().length }})</a
+      >Cart ({{ cartService.loading() ? 'Loading' : cartService.readError() ? 'Unavailable' : cartService.items().length }})</a
     >
   </header>
-  @if (!listings.storageError()) {
+  @if (!listings.storageError() && !listings.loading()) {
   <section class="filters" aria-label="Search and filter artworks">
     <label
       >Search artwork name<input

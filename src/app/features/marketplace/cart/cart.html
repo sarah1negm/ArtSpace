@@ -7,9 +7,24 @@
   @if (cartService.storageError()) {
     <button type="button" class="button secondary" (click)="cartService.retryLoad()">Retry loading cart</button>
   }
-  @if (cartService.readError()) {
+  @if (cartService.loading()) {
+    <p role="status">Loading your server cart...</p>
+  } @else if (cartService.readError()) {
     <p>Your cart is unavailable until its saved data can be loaded.</p>
   } @else {
+  @if (cartService.checkoutPending() && !cartService.busy()) {
+    <p role="alert">The checkout result is not confirmed. Check its result before changing your cart.</p>
+    <button type="button" class="button" (click)="checkout()">Check checkout result</button>
+  }
+  @if (cartService.serverMode) { <p>Each artwork is unique; one of each can be purchased. Sign in to check out.</p> }
+  @if (cartService.unavailableIds().length) {
+    <section role="alert">
+      <p>Some artworks are no longer available. Remove them before checkout.</p>
+      @for (id of cartService.unavailableIds(); track id) {
+        <button type="button" class="button secondary" [disabled]="cartService.busy() || cartService.checkoutPending()" (click)="cartService.removeArtwork(id)">Remove unavailable artwork</button>
+      }
+    </section>
+  }
   @if (receipt(); as order) {
     <section class="empty" role="status">
       <h2>Demo checkout complete</h2>
@@ -42,7 +57,7 @@
           >
             <button
               type="button"
-              [disabled]="line.quantity === 1"
+              [disabled]="line.quantity === 1 || cartService.busy() || cartService.checkoutPending()"
               [attr.aria-label]="'Decrease quantity of ' + line.artwork.title"
               (click)="cartService.setQuantity(line.artwork.id, line.quantity - 1)"
             >
@@ -51,7 +66,7 @@
             <span>Quantity: {{ line.quantity }}</span>
             <button
               type="button"
-              [disabled]="line.quantity === 99"
+              [disabled]="line.quantity >= cartService.maxQuantity || cartService.busy() || cartService.checkoutPending()"
               [attr.aria-label]="'Increase quantity of ' + line.artwork.title"
               (click)="cartService.setQuantity(line.artwork.id, line.quantity + 1)"
             >
@@ -60,6 +75,7 @@
           </div>
           <button
             class="button secondary remove"
+            [disabled]="cartService.busy() || cartService.checkoutPending()"
             type="button"
             [attr.aria-label]="'Remove ' + line.artwork.title"
             (click)="cartService.removeArtwork(line.artwork.id)"
@@ -80,16 +96,18 @@
           {{ cartService.items().length }} item(s) for
           {{ cartService.total() | currency: 'EGP' : 'code' }}. Confirming clears your cart.
         </p>
-        <button type="button" class="button" (click)="checkout()">Confirm demo order</button>
+        <button type="button" class="button" [disabled]="cartService.busy() || !!cartService.unavailableIds().length" (click)="checkout()">{{ cartService.busy() ? 'Confirming...' : 'Confirm demo order' }}</button>
         <button type="button" class="button secondary" (click)="confirming.set(false)">
           Cancel
         </button>
       </section>
     } @else {
-      <button type="button" class="button" (click)="confirming.set(true); receipt.set(null)">
+      <button type="button" class="button" [disabled]="cartService.busy() || !!cartService.unavailableIds().length" (click)="confirming.set(true); receipt.set(null)">
         Simulated checkout
       </button>
     }
+  } @else if (cartService.unavailableIds().length) {
+      <p>No purchasable artworks remain. Remove the unavailable listings above to clear your cart.</p>
   } @else {
       <div class="empty">
         <h2>Your cart is empty</h2>
